@@ -3,7 +3,7 @@ const path = require('path');
 
 //npx cap open android - mobile app
 //npm run dev -- web app
-//npm run rwhats -- desktop app
+//npm run rwhats -- desktop app (necesita npm run dev)
 
 function createWindow() {
   const win = new BrowserWindow({

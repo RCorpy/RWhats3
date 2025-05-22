@@ -3,6 +3,10 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 
+//npx cap open android - mobile app
+//npm run dev -- web app
+//npm run rwhats -- desktop app
+
 function App() {
   const [count, setCount] = useState(0)
 
