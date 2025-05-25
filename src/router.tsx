@@ -19,7 +19,7 @@ export default function AppRouter() {
         />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/chats" element={isLoggedIn ? <ChatListPage /> : <Navigate to="/login" />} />
-        <Route path="/chat/:id" element={isLoggedIn ? <ChatPage /> : <Navigate to="/login" />} />
+        <Route path="/chats/:chatId" element={isLoggedIn ? <ChatPage /> : <Navigate to="/login" />} />
         <Route path="/settings" element={isLoggedIn ? <SettingsPage /> : <Navigate to="/login" />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
