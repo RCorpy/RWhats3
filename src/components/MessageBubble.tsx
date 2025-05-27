@@ -1,5 +1,5 @@
-// components/MessageBubble.tsx
 import { MessageStatus } from "../stores/messageStore";
+import { ReactNode } from "react";
 
 interface MessageBubbleProps {
   msg: {
@@ -8,12 +8,39 @@ interface MessageBubbleProps {
     content: string;
     timestamp: number;
     status: MessageStatus;
+    file?: File; // <-- add this so TypeScript doesn't complain
   };
   showDateChip: boolean;
   dateChipLabel: string;
 }
 
-export default function MessageBubble({ msg, showDateChip, dateChipLabel }: MessageBubbleProps) {
+export default function MessageBubble({
+  msg,
+  showDateChip,
+  dateChipLabel,
+}: MessageBubbleProps) {
+  const fromMe = msg.senderId === "me";
+
+  let isFile = false;
+  let content: ReactNode;
+
+  console.log("CONTENT: ", msg.content);
+
+  if (msg.file) {
+    const file = msg.file;
+    isFile = true;
+    content = (
+      <div className="p-3 rounded-md bg-lime-300 text-black">
+        <div className="font-bold text-sm flex items-center gap-2">
+          📄 {file.name}
+        </div>
+        <div className="text-xs text-black mt-1">{file.type}</div>
+      </div>
+    );
+  } else {
+    content = <div>{msg.content}</div>;
+  }
+
   return (
     <div key={msg.id}>
       {showDateChip && (
@@ -26,14 +53,22 @@ export default function MessageBubble({ msg, showDateChip, dateChipLabel }: Mess
 
       <div
         className={`max-w-[75%] px-3 py-2 rounded relative ${
-          msg.senderId === "me"
-            ? "bg-lime-300 text-black ml-auto"
+          fromMe
+            ? isFile
+              ? "bg-lime-600 text-white ml-auto"
+              : "bg-lime-300 text-black ml-auto"
+            : isFile
+            ? "bg-stone-500 text-white"
             : "bg-stone-50 text-black"
         }`}
       >
-        <div>{msg.content}</div>
+        {content}
 
-        <div className="text-xs text-gray-600 mt-1 flex justify-end items-center gap-1">
+        <div
+          className={`text-xs mt-1 flex justify-end items-center gap-1 ${
+            isFile ? "text-gray-200" : "text-gray-600"
+          }`}
+        >
           <span>
             {new Date(msg.timestamp).toLocaleTimeString([], {
               hour: "2-digit",
@@ -41,16 +76,20 @@ export default function MessageBubble({ msg, showDateChip, dateChipLabel }: Mess
             })}
           </span>
 
-          {msg.senderId === "me" && (
+          {fromMe && (
             <>
               {msg.status === MessageStatus.DELIVERED && (
-                <DoubleCheckIcon className="text-gray-500" />
+                <DoubleCheckIcon
+                  className={isFile ? "text-gray-300" : "text-gray-500"}
+                />
               )}
               {msg.status === MessageStatus.SENT && (
-                <SingleCheckIcon className="text-gray-500" />
+                <SingleCheckIcon
+                  className={isFile ? "text-gray-300" : "text-gray-500"}
+                />
               )}
               {msg.status === MessageStatus.READ && (
-                <DoubleCheckIcon className="text-blue-500" />
+                <DoubleCheckIcon className="text-blue-200" />
               )}
             </>
           )}
@@ -62,7 +101,11 @@ export default function MessageBubble({ msg, showDateChip, dateChipLabel }: Mess
 
 function SingleCheckIcon({ className = "" }) {
   return (
-    <svg className={`w-4 h-4 ${className}`} fill="currentColor" viewBox="0 0 24 24">
+    <svg
+      className={`w-4 h-4 ${className}`}
+      fill="currentColor"
+      viewBox="0 0 24 24"
+    >
       <path d="M5 12l4 4L18 7" />
     </svg>
   );
@@ -70,7 +113,11 @@ function SingleCheckIcon({ className = "" }) {
 
 function DoubleCheckIcon({ className = "" }) {
   return (
-    <svg className={`w-4 h-4 ${className}`} fill="currentColor" viewBox="0 0 24 24">
+    <svg
+      className={`w-4 h-4 ${className}`}
+      fill="currentColor"
+      viewBox="0 0 24 24"
+    >
       <path d="M1 12l4 4L10 9" />
       <path d="M5 12l4 4L18 7" />
     </svg>

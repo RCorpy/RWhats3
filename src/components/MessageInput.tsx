@@ -1,43 +1,67 @@
-// components/MessageInput.tsx
-interface MessageInputProps {
+import { useRef } from "react";
+import { Paperclip, Send } from "lucide-react"; // Or any icon you prefer
+
+type Props = {
   value: string;
   onChange: (val: string) => void;
   onSend: () => void;
   disabled?: boolean;
-  error?: string | null;
-}
+  error?: string;
+  onAttachFile?: (file: File) => void; // 👈 New prop
+};
 
-export default function MessageInput({ value, onChange, onSend, disabled, error }: MessageInputProps) {
+export default function MessageInput({
+  value,
+  onChange,
+  onSend,
+  disabled,
+  error,
+  onAttachFile,
+}: Props) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      onAttachFile?.(e.target.files[0]);
+    }
+  };
+
   return (
-    <div>
-      {error && (
-        <div className="text-red-600 px-4 mb-2 text-sm">{error}</div>
-      )}
-      <div className="p-4 border-t bg-white flex items-center gap-2">
-        <input
-          type="text"
-          className="flex-1 border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-600"
-          placeholder="Escribe un mensaje..."
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              onSend();
-            }
-          }}
-          disabled={disabled}
-        />
-        <button
-          className="bg-green-600 text-white p-2 rounded-full hover:bg-green-700 hover:scale-105 transition disabled:opacity-50 disabled:hover:scale-100"
-          onClick={onSend}
-          disabled={disabled}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10 14L21 3m0 0l-6.5 18a.5.5 0 01-.9.1L10 14z" />
-          </svg>
-        </button>
-      </div>
+    <div className="flex items-center px-4 py-2 bg-white border-t">
+      {/* ===== Attach File Button ===== */}
+      <button
+        type="button"
+        onClick={() => fileInputRef.current?.click()}
+        className="text-gray-600 hover:text-gray-800 mr-2"
+        disabled={disabled}
+      >
+        <Paperclip className="w-5 h-5" />
+      </button>
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileSelect}
+        className="hidden"
+      />
+
+      {/* ===== Input Field ===== */}
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="flex-1 border rounded-full px-4 py-2 text-sm"
+        placeholder="Escribe un mensaje..."
+        disabled={disabled}
+      />
+
+      {/* ===== Send Button ===== */}
+      <button
+        onClick={onSend}
+        className="ml-2 text-blue-600 hover:text-blue-800"
+        disabled={disabled || !value.trim()}
+      >
+        <Send className="w-5 h-5" />
+      </button>
     </div>
   );
 }

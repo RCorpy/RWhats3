@@ -2,6 +2,8 @@ import { useEffect } from 'react';
 import { useChatStore } from '../stores/chatStore';
 import { useNavigate } from 'react-router-dom';
 
+import ProfilePicture from "../components/ProfilePicture";
+
 export default function ChatListPage() {
   const chats = useChatStore((s) => s.chats);
   const setChats = useChatStore((s) => s.setChats);
@@ -35,10 +37,7 @@ export default function ChatListPage() {
           className="px-4 py-3 flex items-center border-b border-gray-200 hover:bg-gray-100 cursor-pointer"
           onClick={() => navigate(`/chats/${chat.id}`)}
         >
-          {/* Placeholder circle avatar */}
-          <div className="w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center font-bold text-sm mr-4">
-            {chat.name[0]?.toUpperCase()}
-          </div>
+          <ProfilePicture name={chat.name} profilePic={chat.picture} />
           <div className="flex-1 min-w-0">
             <div className="font-medium text-gray-900 truncate">
               {chat.name}
