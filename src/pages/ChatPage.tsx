@@ -56,6 +56,23 @@ export default function ChatPage() {
     );
   }
 
+  const formatDateChip = (timestamp: number): string => {
+    const today = new Date();
+    const msgDate = new Date(timestamp);
+
+    const isToday =
+      msgDate.toDateString() === today.toDateString();
+
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+    const isYesterday =
+      msgDate.toDateString() === yesterday.toDateString();
+
+    if (isToday) return "Today";
+    if (isYesterday) return "Yesterday";
+
+    return msgDate.toLocaleDateString();
+  };
   const handleSendMessage = () => {
     if (!newMessage.trim() || !chatId || sending) return;
 
@@ -120,6 +137,8 @@ export default function ChatPage() {
       });
   };
 
+  let lastRenderedDate = "";
+
   return (
     <div className="flex flex-col h-screen bg-gray-200">
       {/* Back Button */}
@@ -135,18 +154,78 @@ export default function ChatPage() {
 
       {/* Chat Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
-        {(messages || []).map((msg) => (
-          <div
-            key={msg.id}
-            className={`p-2 px-3 py-2 rounded-lg text-sm max-w-[80%] break-words ${
-              msg.senderId === "me"
-                ? "bg-lime-300 text-black self-end ml-auto"
-                : "bg-white text-gray-800 self-start"
-            }`}
-          >
-            {msg.content}
+        {(messages || []).map((msg) => {
+          const dateChip = formatDateChip(msg.timestamp);
+          const showDateChip = dateChip !== lastRenderedDate;
+          lastRenderedDate = dateChip;
+          return(
+          <div key={msg.id}>
+            {showDateChip && (
+              <div className="text-xs text-gray-500 text-center my-4">
+                <span className="inline-block bg-stone-50 rounded-full px-3 py-1">
+                  {dateChip}
+                </span>
+              </div>
+            )}
+          
+            <div
+              className={`max-w-[75%] px-3 py-2 rounded relative ${
+                msg.senderId === "me"
+                  ? "bg-lime-300 text-black ml-auto"
+                  : "bg-stone-50 text-black"
+              }`}
+            >      
+
+            <div>{msg.content}</div>
+
+            <div className="text-xs text-gray-600 mt-1 flex justify-end items-center gap-1">
+              {/* Show timestamp for ALL messages */}
+              <span>
+                {new Date(msg.timestamp).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </span>
+
+              {/* Only show checkmarks for *your* messages */}
+              {msg.senderId === "me" && (
+                <>
+                  {msg.status === MessageStatus.DELIVERED && (
+                    <svg
+                      className="w-4 h-4 text-gray-500"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M1 12l4 4L10 9" />
+                      <path d="M5 12l4 4L18 7" />
+                    </svg>
+                  )}
+                  {msg.status === MessageStatus.SENT && (
+                    <svg
+                      className="w-4 h-4 text-gray-500"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M5 12l4 4L18 7" />
+                    </svg>
+                  )}
+                  {msg.status === MessageStatus.READ && (
+                    <svg
+                      className="w-4 h-4 text-blue-500"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M1 12l4 4L10 9" />
+                      <path d="M5 12l4 4L18 7" />
+                    </svg>
+                  )}
+                </>
+              )}
+            </div>
           </div>
-        ))}
+        </div>
+        )}
+        )}
       </div>
 
       {/* Error message */}
