@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { useLoadMessages } from "../hooks/useLoadMessages";
 import { useSendMessage } from "../hooks/useSendMessage";
+import { useSendFile } from "../hooks/useSendFile";
 
 import MessageBubble from "../components/MessageBubble";
 import MessageInput from "../components/MessageInput";
@@ -26,6 +27,7 @@ export default function ChatPage() {
 
   useLoadMessages(chatId);
   const { send, sending, error } = useSendMessage(chatId);
+  const { sendFile } = useSendFile(chatId);
 
   const handleFileAttachment = (file: File) => {
     const fileMsg: any = {
@@ -33,7 +35,7 @@ export default function ChatPage() {
       senderId: "me",
       content: `[FILE:${file.name}]`,
       timestamp: Date.now(),
-      status: MessageStatus.SENT,
+      status: MessageStatus.SENDING,
       file, // store the actual file
     };
     useMessageStore.getState().addMessage(chatId!, fileMsg);
@@ -102,7 +104,7 @@ export default function ChatPage() {
           send(newMessage);
           setNewMessage("");
         }}
-        onAttachFile={handleFileAttachment}
+        onAttachFile={sendFile}
         disabled={sending}
         error={error ?? undefined}
       />

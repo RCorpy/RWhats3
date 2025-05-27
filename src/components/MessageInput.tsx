@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { Paperclip, Send } from "lucide-react"; // Or any icon you prefer
+import { Paperclip, Send } from "lucide-react";
 
 type Props = {
   value: string;
@@ -7,7 +7,7 @@ type Props = {
   onSend: () => void;
   disabled?: boolean;
   error?: string;
-  onAttachFile?: (file: File) => void; // 👈 New prop
+  onAttachFile?: (file: File) => void; // 👈 Pass sendFile from parent
 };
 
 export default function MessageInput({
@@ -21,8 +21,11 @@ export default function MessageInput({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      onAttachFile?.(e.target.files[0]);
+    const file = e.target.files?.[0];
+    if (file) {
+      onAttachFile?.(file);
+      // Optional: clear the file input so the same file can be reselected
+      e.target.value = "";
     }
   };
 

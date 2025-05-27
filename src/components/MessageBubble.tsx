@@ -8,7 +8,7 @@ interface MessageBubbleProps {
     content: string;
     timestamp: number;
     status: MessageStatus;
-    file?: File; // <-- add this so TypeScript doesn't complain
+    file?: File | string;
   };
   showDateChip: boolean;
   dateChipLabel: string;
@@ -24,19 +24,30 @@ export default function MessageBubble({
   let isFile = false;
   let content: ReactNode;
 
-  console.log("CONTENT: ", msg.content);
-
   if (msg.file) {
-    const file = msg.file;
     isFile = true;
-    content = (
-      <div className="p-3 rounded-md bg-lime-300 text-black">
-        <div className="font-bold text-sm flex items-center gap-2">
-          📄 {file.name}
+
+    // Handle file display depending on type
+    if (typeof msg.file === "string") {
+      // If it's a URL or string placeholder
+      content = (
+        <div className="p-3 rounded-md bg-lime-300 text-black">
+          <div className="font-bold text-sm flex items-center gap-2">
+            📄 <a href={msg.file} target="_blank" rel="noopener noreferrer" className="underline">{msg.content}</a>
+          </div>
         </div>
-        <div className="text-xs text-black mt-1">{file.type}</div>
-      </div>
-    );
+      );
+    } else {
+      // It's a File object
+      content = (
+        <div className="p-3 rounded-md bg-lime-300 text-black">
+          <div className="font-bold text-sm flex items-center gap-2">
+            📄 {msg.file.name}
+          </div>
+          <div className="text-xs text-black mt-1">{msg.file.type}</div>
+        </div>
+      );
+    }
   } else {
     content = <div>{msg.content}</div>;
   }

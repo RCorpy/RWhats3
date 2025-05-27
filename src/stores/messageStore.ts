@@ -4,6 +4,7 @@ export enum MessageStatus {
   SENT = "sent",
   DELIVERED = "delivered",
   READ = "read",
+  SENDING = "sending",
 }
 
 interface Message {
@@ -13,6 +14,7 @@ interface Message {
   content: string;
   timestamp: number;
   status: MessageStatus;
+  file?: File | string;
 }
 
 interface MessageStore {
