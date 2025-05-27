@@ -25,18 +25,31 @@ export default function ChatListPage() {
   const sortedChats = Object.values(chats).sort((a, b) => b.timestamp - a.timestamp);
 
   return (
-    <div className="p-4 space-y-2">
-      <h1 className="text-xl font-bold mb-2">Chats</h1>
+    <div className="bg-white h-screen overflow-y-auto">
+      <h1 className="text-lg font-bold px-4 py-3 border-b border-gray-200 bg-gray-50">
+        Chats
+      </h1>
       {sortedChats.map((chat) => (
         <div
           key={chat.id}
-          className="border p-3 rounded cursor-pointer hover:bg-gray-100"
+          className="px-4 py-3 flex items-center border-b border-gray-200 hover:bg-gray-100 cursor-pointer"
           onClick={() => navigate(`/chats/${chat.id}`)}
         >
-          <div className="font-semibold">{chat.name}</div>
-          <div className="text-sm text-gray-600">{chat.lastMessage}</div>
+          {/* Placeholder circle avatar */}
+          <div className="w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center font-bold text-sm mr-4">
+            {chat.name[0]?.toUpperCase()}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="font-medium text-gray-900 truncate">
+              {chat.name}
+            </div>
+            <div className="text-sm text-gray-500 truncate">
+              {chat.lastMessage}
+            </div>
+          </div>
         </div>
       ))}
     </div>
   );
+
 }
