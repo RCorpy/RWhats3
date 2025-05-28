@@ -7,7 +7,7 @@ export enum MessageStatus {
   SENDING = "sending",
 }
 
-interface Message {
+export interface Message {
   id: string;
   chatId: string;
   senderId: string;
@@ -19,6 +19,7 @@ interface Message {
 
 interface MessageStore {
   messages: Record<string, Message[]>;
+  
   setMessages: (chatId: string, messages: Message[]) => void;
   addMessage: (chatId: string, message: Message) => void;
   prependMessages: (chatId: string, messages: Message[]) => void;
@@ -33,13 +34,14 @@ export const useMessageStore = create<MessageStore>()((set, get) => ({
   setMessages: (chatId, msgs) =>
     set((state) => {
       const currentMsgs = state.messages[chatId] || [];
-      // Comparación simple para evitar update si no hay cambio real
+      // Avoid updating if the last message ID and length are the same
       if (
         currentMsgs.length === msgs.length &&
         msgs.length > 0 &&
         currentMsgs[currentMsgs.length - 1].id === msgs[msgs.length - 1].id
-      )
-        return state;
+      ) {
+        return state; // no changes needed
+      }
       return {
         messages: { ...state.messages, [chatId]: msgs },
       };
@@ -50,7 +52,7 @@ export const useMessageStore = create<MessageStore>()((set, get) => ({
       const currentMsgs = state.messages[chatId] || [];
       if (currentMsgs.length > 0) {
         const lastMsg = currentMsgs[currentMsgs.length - 1];
-        if (lastMsg.id === message.id) return state; // evitar duplicados
+        if (lastMsg.id === message.id) return state; // prevent duplicates
       }
       return {
         messages: {
@@ -63,7 +65,7 @@ export const useMessageStore = create<MessageStore>()((set, get) => ({
   prependMessages: (chatId, messages) =>
     set((state) => {
       const currentMsgs = state.messages[chatId] || [];
-      // Evitar agregar duplicados al principio
+      // Filter out messages that already exist
       const newMsgs = messages.filter(
         (m) => !currentMsgs.some((cm) => cm.id === m.id)
       );
@@ -79,10 +81,12 @@ export const useMessageStore = create<MessageStore>()((set, get) => ({
     set((state) => {
       const msgs = state.messages[chatId] || [];
       const index = msgs.findIndex((m) => m.id === messageId);
-      if (index === -1) return state;
+      if (index === -1) return state; // message not found
+
       const updatedMsg = { ...msgs[index], status };
       const updatedMsgs = [...msgs];
       updatedMsgs[index] = updatedMsg;
+
       return {
         messages: {
           ...state.messages,

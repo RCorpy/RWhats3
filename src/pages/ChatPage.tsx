@@ -16,11 +16,10 @@ export default function ChatPage() {
   const { chatId } = useParams<{ chatId: string }>();
   const navigate = useNavigate();
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const messageRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const chat = useChatStore((s) => (chatId ? s.chats[chatId] : undefined));
-  const messages = useMessageStore((s) =>
-    chatId ? s.messages[chatId] : []
-  );
+  const messages = useMessageStore((s) => (chatId ? s.messages[chatId] : undefined));
 
   const [newMessage, setNewMessage] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -49,11 +48,14 @@ export default function ChatPage() {
 
   let lastRenderedDate = "";
 
+  
+
   const filteredMessages = searchQuery
-    ? messages.filter((m) =>
+    ? (messages ?? []).filter((m) =>
         m.content.toLowerCase().includes(searchQuery.toLowerCase())
       )
-    : messages;
+    : messages ?? [];
+
 
   return (
     <div className="flex flex-col h-screen bg-gray-200">
@@ -85,6 +87,9 @@ export default function ChatPage() {
           const dateChip = formatDateChip(msg.timestamp);
           const showDateChip = dateChip !== lastRenderedDate;
           lastRenderedDate = dateChip;
+          if (!messageRefs.current[msg.id]) {
+            messageRefs.current[msg.id] = null;
+          }
 
           return (
             <MessageBubble
@@ -92,6 +97,9 @@ export default function ChatPage() {
               msg={msg}
               showDateChip={showDateChip}
               dateChipLabel={dateChip}
+              ref={(el) => {
+                messageRefs.current[msg.id] = el;
+              }}
             />
           );
         })}
