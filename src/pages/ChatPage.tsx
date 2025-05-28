@@ -17,6 +17,7 @@ export default function ChatPage() {
   const navigate = useNavigate();
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const messageRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
 
   const chat = useChatStore((s) => (chatId ? s.chats[chatId] : undefined));
   const messages = useMessageStore((s) => (chatId ? s.messages[chatId] : undefined));
@@ -24,16 +25,51 @@ export default function ChatPage() {
   const [newMessage, setNewMessage] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
 
   const { send, sending, error } = useSendMessage(chatId);
   const { sendFile } = useSendFile(chatId);
   useLoadMessages(chatId);
+
+  const filteredMessages = searchQuery
+    ? (messages ?? []).filter((m) =>
+        m.content.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : [];
+
+  useEffect(() => {
+    setCurrentMatchIndex(0);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    if (searchOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [searchOpen]);
+
+  useEffect(() => {
+    if (filteredMessages.length > 0) {
+      const currentMessageId = filteredMessages[currentMatchIndex]?.id;
+      if (currentMessageId && messageRefs.current[currentMessageId]) {
+        messageRefs.current[currentMessageId].scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  }, [currentMatchIndex, filteredMessages]);
 
   useEffect(() => {
     if (bottomRef.current) {
       bottomRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+
+  useEffect(() => {
+    if (searchQuery && filteredMessages.length > 0) {
+      const firstMatchId = filteredMessages[0].id;
+      if (messageRefs.current[firstMatchId]) {
+        messageRefs.current[firstMatchId].scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  }, [searchQuery]);
 
   if (!chat) {
     return (
@@ -48,26 +84,32 @@ export default function ChatPage() {
 
   let lastRenderedDate = "";
 
-  
-
-  const filteredMessages = searchQuery
-    ? (messages ?? []).filter((m) =>
-        m.content.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : messages ?? [];
 
 
   return (
     <div className="flex flex-col h-screen bg-gray-200">
       {/* Top Bar with Back, Profile, Buttons */}
       <div className="border-b bg-white shadow-sm">
-        <ChatHeader
-          onSearchClick={() => setSearchOpen((prev) => !prev)}
-          onMoreClick={() => console.log("Show more menu")}
-          chatName={chat.name}
-          profilePic={chat.picture}
-          onBack={() => navigate("/chats")}
-        />
+      <ChatHeader
+        onSearchClick={() => setSearchOpen((prev) => !prev)}
+        onMoreClick={() => console.log("Show more menu")}
+        chatName={chat.name}
+        profilePic={chat.picture}
+        onBack={() => navigate("/chats")}
+        onPrevMatch={() =>
+          setCurrentMatchIndex((i) => Math.max(0, i - 1))
+        }
+        onNextMatch={() =>
+          setCurrentMatchIndex((i) =>
+            Math.min(filteredMessages.length - 1, i + 1)
+          )
+        }
+        disablePrev={currentMatchIndex === 0 || filteredMessages.length === 0}
+        disableNext={
+          currentMatchIndex === filteredMessages.length - 1 ||
+          filteredMessages.length === 0
+        }
+      />
         {searchOpen && (
           <div className="px-4 py-2 border-t bg-gray-50">
             <input
@@ -76,6 +118,7 @@ export default function ChatPage() {
               className="w-full border rounded px-3 py-1 text-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              ref={searchInputRef}
             />
           </div>
         )}
@@ -83,7 +126,7 @@ export default function ChatPage() {
 
       {/* Message List */}
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
-        {filteredMessages.map((msg) => {
+        {(messages || []).map((msg) => {
           const dateChip = formatDateChip(msg.timestamp);
           const showDateChip = dateChip !== lastRenderedDate;
           lastRenderedDate = dateChip;

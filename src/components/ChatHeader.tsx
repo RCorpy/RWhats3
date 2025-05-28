@@ -1,4 +1,4 @@
-import { Search, MoreVertical } from "lucide-react";
+import { Search, MoreVertical, ChevronUp, ChevronDown } from "lucide-react";
 import ProfilePicture from "./ProfilePicture";
 
 type Props = {
@@ -7,6 +7,10 @@ type Props = {
   onBack: () => void;
   onSearchClick?: () => void;
   onMoreClick?: () => void;
+  onPrevMatch?: () => void;
+  onNextMatch?: () => void;
+  disablePrev?: boolean;
+  disableNext?: boolean;
 };
 
 export default function ChatHeader({
@@ -15,6 +19,10 @@ export default function ChatHeader({
   onBack,
   onSearchClick,
   onMoreClick,
+  onPrevMatch,
+  onNextMatch,
+  disablePrev = false,
+  disableNext = false,
 }: Props) {
   return (
     <div className="px-4 py-3 flex justify-between items-start">
@@ -30,16 +38,34 @@ export default function ChatHeader({
           <h1 className="text-lg font-semibold">{chatName}</h1>
         </div>
       </div>
-      <div className="flex gap-2 pt-2">
+      <div className="flex gap-2 pt-2 items-center">
+        <button
+          onClick={onPrevMatch}
+          disabled={disablePrev}
+          className={`p-2 text-gray-600 hover:text-gray-800 disabled:opacity-40 disabled:cursor-not-allowed`}
+          title="Mensaje anterior"
+        >
+          <ChevronUp className="w-5 h-5" />
+        </button>
+        <button
+          onClick={onNextMatch}
+          disabled={disableNext}
+          className={`p-2 text-gray-600 hover:text-gray-800 disabled:opacity-40 disabled:cursor-not-allowed`}
+          title="Siguiente mensaje"
+        >
+          <ChevronDown className="w-5 h-5" />
+        </button>
         <button
           onClick={onSearchClick}
           className="p-2 text-gray-600 hover:text-gray-800"
+          title="Buscar"
         >
           <Search className="w-5 h-5" />
         </button>
         <button
           onClick={onMoreClick}
           className="p-2 text-gray-600 hover:text-gray-800"
+          title="Más opciones"
         >
           <MoreVertical className="w-5 h-5" />
         </button>
