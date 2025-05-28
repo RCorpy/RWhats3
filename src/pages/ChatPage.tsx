@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { MessageStatus, useMessageStore } from "../stores/messageStore";
 import { useChatStore } from "../stores/chatStore";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import { useLoadMessages } from "../hooks/useLoadMessages";
 import { useSendMessage } from "../hooks/useSendMessage";
@@ -17,6 +17,7 @@ import { formatDateChip } from "../utils/formatDateChip";
 export default function ChatPage() {
   const { chatId } = useParams<{ chatId: string }>();
   const navigate = useNavigate();
+  const bottomRef = useRef<HTMLDivElement | null>(null);
 
   const chat = useChatStore((s) => (chatId ? s.chats[chatId] : undefined));
   const messages = useMessageStore((s) =>
@@ -25,21 +26,15 @@ export default function ChatPage() {
 
   const [newMessage, setNewMessage] = useState("");
 
+  useEffect(() => {
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
+
   useLoadMessages(chatId);
   const { send, sending, error } = useSendMessage(chatId);
   const { sendFile } = useSendFile(chatId);
-
-  const handleFileAttachment = (file: File) => {
-    const fileMsg: any = {
-      id: `file-${Date.now()}`,
-      senderId: "me",
-      content: `[FILE:${file.name}]`,
-      timestamp: Date.now(),
-      status: MessageStatus.SENDING,
-      file, // store the actual file
-    };
-    useMessageStore.getState().addMessage(chatId!, fileMsg);
-  };
 
   if (!chat) {
     return (
@@ -89,6 +84,7 @@ export default function ChatPage() {
             />
           );
         })}
+        <div ref={bottomRef} />
       </div>
 
       {/* ===== Error Message ===== */}
@@ -108,6 +104,16 @@ export default function ChatPage() {
         disabled={sending}
         error={error ?? undefined}
       />
+      <button
+        onClick={() => {
+          bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+        }}
+        className="fixed bottom-20 right-4 bg-blue-600 text-white p-2 rounded-full shadow-md hover:bg-blue-700 transition"
+        title="Scroll to bottom"
+      >
+        ↓
+      </button>
+
     </div>
   );
 }

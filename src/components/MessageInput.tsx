@@ -52,6 +52,13 @@ export default function MessageInput({
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey){
+            e.preventDefault();
+            if (value.trim()){ onSend() }
+            } 
+          }
+        }
         className="flex-1 border rounded-full px-4 py-2 text-sm"
         placeholder="Escribe un mensaje..."
         disabled={disabled}

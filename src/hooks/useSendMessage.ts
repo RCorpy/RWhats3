@@ -15,13 +15,25 @@ export function useSendMessage(chatId?: string) {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const normalizeIfShouting = (text: string) => {
+    const isAllUppercase = text === text.toUpperCase();
+    if (!isAllUppercase) return text;
+    return text
+      .toLowerCase()
+      .split(" ")
+      .filter(Boolean)
+      .map(word => word[0].toUpperCase() + word.slice(1))
+      .join(" ");
+};
+
   const send = (content: string) => {
-    if (!content.trim() || !chatId || sending) return;
+    const formatted = normalizeIfShouting(content.trim());
+    if (!formatted || !chatId || sending) return;
 
     setSending(true);
     setError(null);
 
-    const tempMsg = createTempMessage(chatId, content);
+    const tempMsg = createTempMessage(chatId, formatted);
     addMessage(chatId, tempMsg);
 
     fetch("/api/messages", {
