@@ -9,10 +9,8 @@ import { useSendFile } from "../hooks/useSendFile";
 
 import MessageBubble from "../components/MessageBubble";
 import MessageInput from "../components/MessageInput";
-import ProfilePicture from "../components/ProfilePicture";
+import ChatHeader from "../components/ChatHeader";
 import { formatDateChip } from "../utils/formatDateChip";
-
-
 
 export default function ChatPage() {
   const { chatId } = useParams<{ chatId: string }>();
@@ -25,16 +23,18 @@ export default function ChatPage() {
   );
 
   const [newMessage, setNewMessage] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const { send, sending, error } = useSendMessage(chatId);
+  const { sendFile } = useSendFile(chatId);
+  useLoadMessages(chatId);
 
   useEffect(() => {
     if (bottomRef.current) {
       bottomRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
-
-  useLoadMessages(chatId);
-  const { send, sending, error } = useSendMessage(chatId);
-  const { sendFile } = useSendFile(chatId);
 
   if (!chat) {
     return (
@@ -49,28 +49,39 @@ export default function ChatPage() {
 
   let lastRenderedDate = "";
 
+  const filteredMessages = searchQuery
+    ? messages.filter((m) =>
+        m.content.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : messages;
+
   return (
     <div className="flex flex-col h-screen bg-gray-200">
-      
-      {/* ===== Top Bar: Back Button and Chat Title ===== */}
-      <div className="px-4 py-3 border-b bg-white shadow-sm">
-        
-        <button
-          className="text-sm text-blue-600 hover:underline"
-          onClick={() => navigate("/chats")}
-        >
-          ← Volver a la lista de chats
-        </button>
-        <div className="flex items-center mt-2">
-          <ProfilePicture name={chat.name} profilePic={chat.picture} />
-          <h1 className="text-lg font-semibold mt-2">{chat.name}</h1>
-        </div>
-        
+      {/* Top Bar with Back, Profile, Buttons */}
+      <div className="border-b bg-white shadow-sm">
+        <ChatHeader
+          onSearchClick={() => setSearchOpen((prev) => !prev)}
+          onMoreClick={() => console.log("Show more menu")}
+          chatName={chat.name}
+          profilePic={chat.picture}
+          onBack={() => navigate("/chats")}
+        />
+        {searchOpen && (
+          <div className="px-4 py-2 border-t bg-gray-50">
+            <input
+              type="text"
+              placeholder="Buscar mensajes..."
+              className="w-full border rounded px-3 py-1 text-sm"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        )}
       </div>
 
-      {/* ===== Message List ===== */}
+      {/* Message List */}
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
-        {(messages || []).map((msg) => {
+        {filteredMessages.map((msg) => {
           const dateChip = formatDateChip(msg.timestamp);
           const showDateChip = dateChip !== lastRenderedDate;
           lastRenderedDate = dateChip;
@@ -87,12 +98,12 @@ export default function ChatPage() {
         <div ref={bottomRef} />
       </div>
 
-      {/* ===== Error Message ===== */}
+      {/* Error Message */}
       {error && (
         <div className="text-red-600 px-4 mb-2 text-sm">{error}</div>
       )}
 
-      {/* ===== Message Input Field ===== */}
+      {/* Message Input Field */}
       <MessageInput
         value={newMessage}
         onChange={setNewMessage}
@@ -104,6 +115,8 @@ export default function ChatPage() {
         disabled={sending}
         error={error ?? undefined}
       />
+
+      {/* Scroll to bottom button */}
       <button
         onClick={() => {
           bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -113,7 +126,6 @@ export default function ChatPage() {
       >
         ↓
       </button>
-
     </div>
   );
 }
