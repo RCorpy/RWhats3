@@ -78,10 +78,10 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
               : "bg-stone-50 text-black"
           }`}
         >
-          {content}
-
+        <div className="flex items-end justify-between gap-2">
+          <div className="flex-1">{content}</div>
           <div
-            className={`text-xs mt-1 flex justify-end items-center gap-1 ${
+            className={`text-xs flex items-center gap-1 ${
               isFile ? "text-gray-200" : "text-gray-600"
             }`}
           >
@@ -110,6 +110,8 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
               </>
             )}
           </div>
+        </div>
+
         </div>
       </div>
     );

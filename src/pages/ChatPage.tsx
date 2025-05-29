@@ -47,14 +47,29 @@ export default function ChatPage() {
     }
   }, [searchOpen]);
 
-  useEffect(() => {
-    if (filteredMessages.length > 0) {
-      const currentMessageId = filteredMessages[currentMatchIndex]?.id;
-      if (currentMessageId && messageRefs.current[currentMessageId]) {
-        messageRefs.current[currentMessageId].scrollIntoView({ behavior: "smooth" });
-      }
+useEffect(() => {
+  if (filteredMessages.length > 0) {
+    const currentMessageId = filteredMessages[currentMatchIndex]?.id;
+
+    // Remove highlight from all messages
+    Object.keys(messageRefs.current).forEach((id) => {
+      messageRefs.current[id]?.classList.remove("bg-green-200", "border-l-4", "border-green-200");
+    });
+
+    // Add passive highlight to all matched messages
+    filteredMessages.forEach(({ id }) => {
+      messageRefs.current[id]?.classList.add("bg-green-200");
+    });
+
+    // Add active highlight to current match
+    if (currentMessageId && messageRefs.current[currentMessageId]) {
+      const node = messageRefs.current[currentMessageId];
+      node?.classList.add("bg-green-200", "border-l-4", "border-green-400");
+      node?.scrollIntoView({ behavior: "smooth", block: "center" });
     }
-  }, [currentMatchIndex, filteredMessages]);
+  }
+}, [currentMatchIndex, filteredMessages]);
+
 
   useEffect(() => {
     if (bottomRef.current) {
@@ -109,6 +124,7 @@ export default function ChatPage() {
           currentMatchIndex === filteredMessages.length - 1 ||
           filteredMessages.length === 0
         }
+        isSearchOpen={searchOpen}
       />
         {searchOpen && (
           <div className="px-4 py-2 border-t bg-gray-50">

@@ -11,6 +11,7 @@ type Props = {
   onNextMatch?: () => void;
   disablePrev?: boolean;
   disableNext?: boolean;
+  isSearchOpen?: boolean;
 };
 
 export default function ChatHeader({
@@ -23,6 +24,7 @@ export default function ChatHeader({
   onNextMatch,
   disablePrev = false,
   disableNext = false,
+  isSearchOpen = false
 }: Props) {
   return (
     <div className="px-4 py-3 flex justify-between items-start">
@@ -39,22 +41,28 @@ export default function ChatHeader({
         </div>
       </div>
       <div className="flex gap-2 pt-2 items-center">
-        <button
-          onClick={onPrevMatch}
-          disabled={disablePrev}
-          className={`p-2 text-gray-600 hover:text-gray-800 disabled:opacity-40 disabled:cursor-not-allowed`}
-          title="Mensaje anterior"
-        >
-          <ChevronUp className="w-5 h-5" />
-        </button>
-        <button
-          onClick={onNextMatch}
-          disabled={disableNext}
-          className={`p-2 text-gray-600 hover:text-gray-800 disabled:opacity-40 disabled:cursor-not-allowed`}
-          title="Siguiente mensaje"
-        >
-          <ChevronDown className="w-5 h-5" />
-        </button>
+
+
+      {isSearchOpen && (
+        <>
+          <button
+            onClick={onPrevMatch}
+            disabled={disablePrev}
+            className={`p-2 text-gray-600 hover:text-gray-800 disabled:opacity-40 disabled:cursor-not-allowed`}
+            title="Mensaje anterior"
+          >
+            <ChevronUp className="w-5 h-5" />
+          </button>
+          <button
+            onClick={onNextMatch}
+            disabled={disableNext}
+            className={`p-2 text-gray-600 hover:text-gray-800 disabled:opacity-40 disabled:cursor-not-allowed`}
+            title="Siguiente mensaje"
+          >
+            <ChevronDown className="w-5 h-5" />
+          </button>
+        </>
+      )}
         <button
           onClick={onSearchClick}
           className="p-2 text-gray-600 hover:text-gray-800"
