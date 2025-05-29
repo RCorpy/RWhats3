@@ -1,76 +1,65 @@
+// hooks/useSendMessage.ts
 import { useMessageStore, MessageStatus } from "../stores/messageStore";
 import { useChatStore } from "../stores/chatStore";
-import { useState } from "react";
-import { createTempMessage } from "../utils/createTempMessage"
+import { v4 as uuidv4 } from "uuid";
+import { useSendFile } from "./useSendFile";
 
 export function useSendMessage(chatId?: string) {
-  const messages = useMessageStore((s) =>
-    chatId ? s.messages[chatId] : []
-  );
+  const { sendFile } = useSendFile(chatId);
   const addMessage = useMessageStore((s) => s.addMessage);
   const setMessages = useMessageStore((s) => s.setMessages);
-  const updateChat = useChatStore((s) => s.updateChat);
   const chat = useChatStore((s) => (chatId ? s.chats[chatId] : undefined));
+  const updateChat = useChatStore((s) => s.updateChat);
+  const messages = useMessageStore((s) => (chatId ? s.messages[chatId] : []));
 
-  const [sending, setSending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const sendMessage = async (content: string, file?: File) => {
+    if (!chatId || (!content && !file)) return;
 
-  const normalizeIfShouting = (text: string) => {
-    const isAllUppercase = text === text.toUpperCase();
-    if (!isAllUppercase) return text;
-    return text
-      .toLowerCase()
-      .split(" ")
-      .filter(Boolean)
-      .map(word => word[0].toUpperCase() + word.slice(1))
-      .join(" ");
-};
+    if (file) {
+      await sendFile(file); // Let existing logic handle everything
+      return;
+    }
 
-  const send = (content: string) => {
-    const formatted = normalizeIfShouting(content.trim());
-    if (!formatted || !chatId || sending) return;
+    const tempId = uuidv4();
+    const tempMsg = {
+      id: tempId,
+      chatId,
+      senderId: "me",
+      content,
+      timestamp: Date.now(),
+      status: MessageStatus.SENDING,
+    };
 
-    setSending(true);
-    setError(null);
-
-    const tempMsg = createTempMessage(chatId, formatted);
     addMessage(chatId, tempMsg);
 
-    fetch("/api/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(tempMsg),
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to send message");
-        return res.json();
-      })
-      .then((saved) => {
-        setMessages(chatId, messages.filter((m) => m.id !== tempMsg.id));
-        addMessage(chatId, {
-          id: saved.id,
-          chatId: saved.chatId,
-          senderId: saved.senderId,
-          content: saved.content,
-          timestamp: saved.timestamp,
-          status: saved.status,
-        });
+    try {
+      const res = await fetch("/api/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(tempMsg),
+      });
 
-        if (chat) {
-          updateChat(chatId, {
-            ...chat,
-            lastMessage: saved.content,
-            timestamp: saved.timestamp,
-            unreadCount: 0,
-          });
-        }
-      })
-      .catch((err) => {
-        setError("Error sending message. Please try again.");
-        console.error("Error sending message:", err);
-      })
-      .finally(() => setSending(false));
+      if (!res.ok) throw new Error("Failed to send message");
+
+      const saved = await res.json();
+
+      setMessages(chatId, messages.filter((m) => m.id !== tempId));
+      addMessage(chatId, saved);
+
+      if (chat) {
+        updateChat(chatId, {
+          ...chat,
+          lastMessage: saved.content,
+          timestamp: saved.timestamp,
+          unreadCount: 0,
+        });
+      }
+    } catch (err) {
+      console.error("Message send error:", err);
+    }
   };
 
-  return { send, sending, error };
+  return { sendMessage };
 }

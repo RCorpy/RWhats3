@@ -17,18 +17,16 @@ interface MessageBubbleProps {
 const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
   ({ msg, showDateChip, dateChipLabel }, ref) => {
     const fromMe = msg.senderId === "me";
+    const isFile = !!msg.file;
 
-    let isFile = false;
-    let content: ReactNode;
+    let fileElement: ReactNode = null;
 
     if (msg.file) {
-      isFile = true;
-
-      // Handle file display depending on type
       if (typeof msg.file === "string") {
-        // If it's a URL or string placeholder
-        content = (
-          <div className="p-3 rounded-md bg-lime-300 text-black">
+        // Show only the filename or a generic label
+        const fileName = msg.file.split("/").pop();
+        fileElement = (
+          <div className="p-2 rounded bg-lime-200 text-black">
             <div className="font-bold text-sm flex items-center gap-2">
               📄{" "}
               <a
@@ -37,15 +35,14 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
                 rel="noopener noreferrer"
                 className="underline"
               >
-                {msg.content}
+                {fileName || "Ver archivo"}
               </a>
             </div>
           </div>
         );
       } else {
-        // It's a File object
-        content = (
-          <div className="p-3 rounded-md bg-lime-300 text-black">
+        fileElement = (
+          <div className="p-2 rounded bg-lime-200 text-black">
             <div className="font-bold text-sm flex items-center gap-2">
               📄 {msg.file.name}
             </div>
@@ -53,8 +50,6 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
           </div>
         );
       }
-    } else {
-      content = <div>{msg.content}</div>;
     }
 
     return (
@@ -70,18 +65,22 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
         <div
           className={`max-w-[75%] px-3 py-2 rounded relative ${
             fromMe
-              ? isFile
-                ? "bg-lime-600 text-white ml-auto"
-                : "bg-lime-300 text-black ml-auto"
+              ? "ml-auto " +
+                (isFile ? "bg-lime-600 text-white" : "bg-lime-300 text-black")
               : isFile
               ? "bg-stone-500 text-white"
               : "bg-stone-50 text-black"
           }`}
         >
-        <div className="flex items-end justify-between gap-2">
-          <div className="flex-1">{content}</div>
+          <div className="flex flex-col gap-2">
+            {fileElement}
+            {msg.content.trim() !== "" && (
+              <div className="whitespace-pre-line">{msg.content}</div>
+            )}
+          </div>
+
           <div
-            className={`text-xs flex items-center gap-1 ${
+            className={`text-xs flex justify-end gap-1 mt-1 ${
               isFile ? "text-gray-200" : "text-gray-600"
             }`}
           >
@@ -110,8 +109,6 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
               </>
             )}
           </div>
-        </div>
-
         </div>
       </div>
     );

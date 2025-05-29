@@ -1,3 +1,4 @@
+// src/stores/messageStore.ts
 import { create } from "zustand";
 
 export enum MessageStatus {
@@ -19,7 +20,7 @@ export interface Message {
 
 interface MessageStore {
   messages: Record<string, Message[]>;
-  
+
   setMessages: (chatId: string, messages: Message[]) => void;
   addMessage: (chatId: string, message: Message) => void;
   prependMessages: (chatId: string, messages: Message[]) => void;
@@ -34,13 +35,12 @@ export const useMessageStore = create<MessageStore>()((set, get) => ({
   setMessages: (chatId, msgs) =>
     set((state) => {
       const currentMsgs = state.messages[chatId] || [];
-      // Avoid updating if the last message ID and length are the same
       if (
         currentMsgs.length === msgs.length &&
         msgs.length > 0 &&
         currentMsgs[currentMsgs.length - 1].id === msgs[msgs.length - 1].id
       ) {
-        return state; // no changes needed
+        return state; // no change needed
       }
       return {
         messages: { ...state.messages, [chatId]: msgs },
@@ -65,7 +65,6 @@ export const useMessageStore = create<MessageStore>()((set, get) => ({
   prependMessages: (chatId, messages) =>
     set((state) => {
       const currentMsgs = state.messages[chatId] || [];
-      // Filter out messages that already exist
       const newMsgs = messages.filter(
         (m) => !currentMsgs.some((cm) => cm.id === m.id)
       );

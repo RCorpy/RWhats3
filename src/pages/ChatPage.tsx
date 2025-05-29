@@ -27,7 +27,7 @@ export default function ChatPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
 
-  const { send, sending, error } = useSendMessage(chatId);
+  const { sendMessage } = useSendMessage(chatId);
   const { sendFile } = useSendFile(chatId);
   useLoadMessages(chatId);
 
@@ -166,21 +166,19 @@ useEffect(() => {
       </div>
 
       {/* Error Message */}
-      {error && (
-        <div className="text-red-600 px-4 mb-2 text-sm">{error}</div>
+      {false && ( //{error &&}
+        <div className="text-red-600 px-4 mb-2 text-sm">{"error"}</div>
       )}
 
       {/* Message Input Field */}
       <MessageInput
         value={newMessage}
         onChange={setNewMessage}
-        onSend={() => {
-          send(newMessage);
-          setNewMessage("");
+        onSend={(msg, file) => {
+          sendMessage(msg, file);
         }}
-        onAttachFile={sendFile}
-        disabled={sending}
-        error={error ?? undefined}
+        //disabled={sending}
+        //error={error ?? undefined}
       />
 
       {/* Scroll to bottom button */}
