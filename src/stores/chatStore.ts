@@ -1,7 +1,7 @@
 // src/stores/chatStore.ts
 import { create } from 'zustand';
 
-interface Chat {
+export interface Chat {
   id: string;
   name: string;
   picture?: string;
@@ -15,10 +15,12 @@ interface ChatStore {
   chats: Record<string, Chat>;
   setChats: (chats: Chat[]) => void;
   updateChat: (id: string, chat: Partial<Chat>) => void;
+  addOrUpdateChat: (chat: Chat) => void;
+  removeChat: (id: string) => void;
   clearChats: () => void;
 }
 
-export const useChatStore = create<ChatStore>()((set) => ({
+export const useChatStore = create<ChatStore>()((set, get) => ({
   chats: {},
 
   setChats: (chats) => {
@@ -36,6 +38,23 @@ export const useChatStore = create<ChatStore>()((set) => ({
         [id]: { ...state.chats[id], ...chatData },
       },
     })),
+
+  addOrUpdateChat: (chat) =>
+    set((state) => ({
+      chats: {
+        ...state.chats,
+        [chat.id]: {
+          ...state.chats[chat.id],
+          ...chat,
+        },
+      },
+    })),
+
+  removeChat: (id) =>
+    set((state) => {
+      const { [id]: _, ...rest } = state.chats;
+      return { chats: rest };
+    }),
 
   clearChats: () => set({ chats: {} }),
 }));

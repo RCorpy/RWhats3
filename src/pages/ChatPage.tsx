@@ -5,7 +5,6 @@ import { useState, useEffect, useRef } from "react";
 
 import { useLoadMessages } from "../hooks/useLoadMessages";
 import { useSendMessage } from "../hooks/useSendMessage";
-import { useSendFile } from "../hooks/useSendFile";
 
 import MessageBubble from "../components/MessageBubble";
 import MessageInput from "../components/MessageInput";
@@ -28,7 +27,7 @@ export default function ChatPage() {
   const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
 
   const { sendMessage } = useSendMessage(chatId);
-  const { sendFile } = useSendFile(chatId);
+
   useLoadMessages(chatId);
 
   const filteredMessages = searchQuery
@@ -175,7 +174,7 @@ useEffect(() => {
         value={newMessage}
         onChange={setNewMessage}
         onSend={(msg, file) => {
-          sendMessage(msg, file);
+          sendMessage(msg, file, null);
         }}
         //disabled={sending}
         //error={error ?? undefined}

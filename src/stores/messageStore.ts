@@ -16,6 +16,7 @@ export interface Message {
   timestamp: number;
   status: MessageStatus;
   file?: File | string;
+  referenceId?: string;
 }
 
 interface MessageStore {
@@ -50,10 +51,9 @@ export const useMessageStore = create<MessageStore>()((set, get) => ({
   addMessage: (chatId, message) =>
     set((state) => {
       const currentMsgs = state.messages[chatId] || [];
-      if (currentMsgs.length > 0) {
-        const lastMsg = currentMsgs[currentMsgs.length - 1];
-        if (lastMsg.id === message.id) return state; // prevent duplicates
-      }
+      const exists = currentMsgs.some((m) => m.id === message.id);
+      if (exists) return state;
+
       return {
         messages: {
           ...state.messages,
@@ -80,7 +80,7 @@ export const useMessageStore = create<MessageStore>()((set, get) => ({
     set((state) => {
       const msgs = state.messages[chatId] || [];
       const index = msgs.findIndex((m) => m.id === messageId);
-      if (index === -1) return state; // message not found
+      if (index === -1) return state;
 
       const updatedMsg = { ...msgs[index], status };
       const updatedMsgs = [...msgs];

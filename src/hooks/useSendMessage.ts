@@ -1,44 +1,58 @@
 // hooks/useSendMessage.ts
+import { useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 import { useMessageStore, MessageStatus } from "../stores/messageStore";
 import { useChatStore } from "../stores/chatStore";
-import { v4 as uuidv4 } from "uuid";
-import { useSendFile } from "./useSendFile";
 
 export function useSendMessage(chatId?: string) {
-  const { sendFile } = useSendFile(chatId);
   const addMessage = useMessageStore((s) => s.addMessage);
   const setMessages = useMessageStore((s) => s.setMessages);
+  const messages = useMessageStore((s) => (chatId ? s.messages[chatId] : []));
   const chat = useChatStore((s) => (chatId ? s.chats[chatId] : undefined));
   const updateChat = useChatStore((s) => s.updateChat);
-  const messages = useMessageStore((s) => (chatId ? s.messages[chatId] : []));
 
-  const sendMessage = async (content: string, file?: File) => {
-    if (!chatId || (!content && !file)) return;
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-    if (file) {
-      await sendFile(file); // Let existing logic handle everything
-      return;
-    }
+  const sendMessage = async (
+    content: string,
+    file?: File,
+    referenceId?: string
+  ) => {
+    if (!chatId || (!content && !file) || sending) return;
+
+    setSending(true);
+    setError(null);
 
     const tempId = uuidv4();
+    const timestamp = Date.now();
+
     const tempMsg = {
       id: tempId,
       chatId,
       senderId: "me",
-      content,
-      timestamp: Date.now(),
+      content: file ? file.name : content,
+      timestamp,
       status: MessageStatus.SENDING,
+      file: file ? URL.createObjectURL(file) : undefined,
+      referenceId,
     };
 
     addMessage(chatId, tempMsg);
 
     try {
+      const formData = new FormData();
+      formData.append("id", tempId);
+      formData.append("chatId", chatId);
+      formData.append("senderId", "me");
+      formData.append("content", content || `[FILE:${file?.name}]`);
+      formData.append("timestamp", String(timestamp));
+      if (file) formData.append("file", file);
+      if (referenceId) formData.append("referenceId", referenceId);
+
       const res = await fetch("/api/messages", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(tempMsg),
+        body: formData,
       });
 
       if (!res.ok) throw new Error("Failed to send message");
@@ -57,9 +71,12 @@ export function useSendMessage(chatId?: string) {
         });
       }
     } catch (err) {
-      console.error("Message send error:", err);
+      setError("Error sending message.");
+      console.error("Send error:", err);
+    } finally {
+      setSending(false);
     }
   };
 
-  return { sendMessage };
+  return { sendMessage, sending, error };
 }
