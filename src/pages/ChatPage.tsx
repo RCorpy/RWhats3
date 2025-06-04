@@ -10,6 +10,8 @@ import MessageBubble from "../components/MessageBubble";
 import MessageInput from "../components/MessageInput";
 import ChatHeader from "../components/ChatHeader";
 import { formatDateChip } from "../utils/formatDateChip";
+import { assignColorsToParticipants } from "../utils/colorUtils";
+import {Participant} from "../stores/chatStore";
 
 export default function ChatPage() {
   const { chatId } = useParams<{ chatId: string }>();
@@ -26,6 +28,8 @@ export default function ChatPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
 
+  const [coloredParticipants, setColoredParticipants] = useState<Participant[]>([]);
+
   const { sendMessage } = useSendMessage(chatId);
 
   useLoadMessages(chatId);
@@ -35,6 +39,14 @@ export default function ChatPage() {
         m.content.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : [];
+
+    useEffect(() => {
+    if (chat?.isGroup && chat.participants) {
+      setColoredParticipants(assignColorsToParticipants(chat.participants));
+    } else {
+      setColoredParticipants([]);
+    }
+  }, [chat?.isGroup, chat?.participants]);
 
   useEffect(() => {
     setCurrentMatchIndex(0);
@@ -148,6 +160,10 @@ useEffect(() => {
           if (!messageRefs.current[msg.id]) {
             messageRefs.current[msg.id] = null;
           }
+          
+          const participant = coloredParticipants.find(
+            (p) => p.waId === msg.senderId
+          );
 
           return (
             <MessageBubble
@@ -158,6 +174,9 @@ useEffect(() => {
               ref={(el) => {
                 messageRefs.current[msg.id] = el;
               }}
+              isGroup={chat.isGroup}
+              senderName={participant?.name}
+              senderNameColor={participant?.color}
             />
           );
         })}

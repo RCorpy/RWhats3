@@ -9,13 +9,17 @@ interface MessageBubbleProps {
     timestamp: number;
     status: MessageStatus;
     file?: File | string;
+    fileName?: string;
   };
   showDateChip: boolean;
   dateChipLabel: string;
+  isGroup?: boolean;   
+  senderName?: string; 
+  senderNameColor?: string;
 }
 
 const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
-  ({ msg, showDateChip, dateChipLabel }, ref) => {
+  ({ msg, showDateChip, dateChipLabel, isGroup, senderName, senderNameColor }, ref) => {
     const fromMe = msg.senderId === "me";
     const isFile = !!msg.file;
 
@@ -24,7 +28,7 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
     if (msg.file) {
       if (typeof msg.file === "string") {
         // Show only the filename or a generic label
-        const fileName = msg.file.split("/").pop();
+        const displayFileName = msg.fileName|| msg.file.split("/").pop();
         fileElement = (
           <div className="p-2 rounded bg-lime-200 text-black">
             <div className="font-bold text-sm flex items-center gap-2">
@@ -35,7 +39,7 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
                 rel="noopener noreferrer"
                 className="underline"
               >
-                {fileName || "Ver archivo"}
+                {displayFileName || "Ver archivo"}
               </a>
             </div>
           </div>
@@ -52,6 +56,15 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
       }
     }
 
+    const bubbleAlignmentClass = fromMe ? "ml-auto" : "mr-auto";
+    // Conditional background based on sender and file presence
+    let bubbleBgColor = "";
+    if (fromMe) {
+        bubbleBgColor = isFile ? "bg-lime-600 text-white" : "bg-lime-300 text-black";
+    } else {
+        bubbleBgColor = isFile ? "bg-stone-500 text-white" : "bg-stone-50 text-black";
+    }
+
     return (
       <div ref={ref} key={msg.id}>
         {showDateChip && (
@@ -62,19 +75,15 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
           </div>
         )}
 
-        <div
-          className={`max-w-[75%] px-3 py-2 rounded relative ${
-            fromMe
-              ? "ml-auto " +
-                (isFile ? "bg-lime-600 text-white" : "bg-lime-300 text-black")
-              : isFile
-              ? "bg-stone-500 text-white"
-              : "bg-stone-50 text-black"
-          }`}
-        >
+        <div className={`max-w-[75%] px-3 py-2 rounded-lg relative ${bubbleAlignmentClass} ${bubbleBgColor} mt-1`}>
+          {!fromMe && isGroup && senderName && (
+            <div className={`text-xs font-semibold mb-1 ${senderNameColor || 'text-gray-700'}`}>
+              {senderName}
+            </div>
+          )}
           <div className="flex flex-col gap-2">
             {fileElement}
-            {msg.content.trim() !== "" && (
+            {msg.content && msg.content.trim() !== "" && ( // Ensure content is checked for null/undefined too
               <div className="whitespace-pre-line">{msg.content}</div>
             )}
           </div>

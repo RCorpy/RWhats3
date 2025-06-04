@@ -1,14 +1,23 @@
 // src/stores/chatStore.ts
 import { create } from 'zustand';
+// src/stores/chatStore.ts
+
+export interface Participant {
+  waId: string;
+  name: string;
+  color?: string; // Will be assigned in the frontend for display
+}
 
 export interface Chat {
-  id: string;
-  name: string;
+  id: string; // This will be waId (user or group)
+  name:string;
   picture?: string;
   lastMessage?: string;
   timestamp: number;
   unreadCount: number;
   isTyping?: boolean;
+  isGroup?: boolean;       // New field
+  participants?: Participant[]; // New field
 }
 
 interface ChatStore {
@@ -26,6 +35,7 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
   setChats: (chats) => {
     const chatMap: Record<string, Chat> = {};
     chats.forEach((chat) => {
+      console.log(chat)
       chatMap[chat.id] = chat;
     });
     set({ chats: chatMap });
