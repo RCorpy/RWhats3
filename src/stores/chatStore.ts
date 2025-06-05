@@ -18,6 +18,8 @@ export interface Chat {
   isTyping?: boolean;
   isGroup?: boolean;       // New field
   participants?: Participant[]; // New field
+  isMuted?: boolean;
+  isPinned?: boolean;
 }
 
 interface ChatStore {

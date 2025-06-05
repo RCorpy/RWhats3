@@ -12,6 +12,8 @@ type Props = {
   disablePrev?: boolean;
   disableNext?: boolean;
   isSearchOpen?: boolean;
+  isMuted?: boolean;
+  isPinned?: boolean;
 };
 
 export default function ChatHeader({
@@ -24,7 +26,9 @@ export default function ChatHeader({
   onNextMatch,
   disablePrev = false,
   disableNext = false,
-  isSearchOpen = false
+  isSearchOpen = false,
+  isMuted = false,
+  isPinned = false
 }: Props) {
   return (
     <div className="px-4 py-3 flex justify-between items-start">
@@ -37,7 +41,11 @@ export default function ChatHeader({
         </button>
         <div className="flex items-center mt-2 gap-2">
           <ProfilePicture name={chatName} profilePic={profilePic} />
-          <h1 className="text-lg font-semibold">{chatName}</h1>
+          <h1 className="text-lg font-semibold">
+            {isPinned && <span title="Pinned">📌</span>}
+            {isMuted && <span title="Muted" className="text-gray-400">🔇</span>}
+            {chatName}
+          </h1>
         </div>
       </div>
       <div className="flex gap-2 pt-2 items-center">

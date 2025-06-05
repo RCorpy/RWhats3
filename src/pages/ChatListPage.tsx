@@ -24,7 +24,14 @@ export default function ChatListPage() {
       });
   }, [setChats]);
 
-  const sortedChats = Object.values(chats).sort((a, b) => b.timestamp - a.timestamp);
+const sortedChats = Object.values(chats).sort((a, b) => {
+  // Primero pinneados arriba
+  if (a.isPinned && !b.isPinned) return -1;
+  if (!a.isPinned && b.isPinned) return 1;
+  // Si ambos igual en pin, ordenar por timestamp descendente
+  return b.timestamp - a.timestamp;
+});
+
 
   return (
     <div className="bg-white h-screen overflow-y-auto">
@@ -40,6 +47,8 @@ export default function ChatListPage() {
           <ProfilePicture name={chat.name} profilePic={chat.picture} />
           <div className="flex-1 min-w-0">
             <div className="font-medium text-gray-900 truncate">
+              {chat.isPinned && <span title="Pinned">📌</span>}
+              {chat.isMuted && <span title="Muted" className="mr-1">🔇</span>}
               {chat.name}
             </div>
             <div className="text-sm text-gray-500 truncate">

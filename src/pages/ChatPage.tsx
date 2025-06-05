@@ -12,6 +12,7 @@ import ChatHeader from "../components/ChatHeader";
 import { formatDateChip } from "../utils/formatDateChip";
 import { assignColorsToParticipants } from "../utils/colorUtils";
 import {Participant} from "../stores/chatStore";
+import ChatOptionsModal from "../components/ChatOptionsModal";
 
 export default function ChatPage() {
   const { chatId } = useParams<{ chatId: string }>();
@@ -27,6 +28,8 @@ export default function ChatPage() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
+  const [showChatOptions, setShowChatOptions] = useState(false);
+
 
   const [coloredParticipants, setColoredParticipants] = useState<Participant[]>([]);
 
@@ -118,7 +121,7 @@ useEffect(() => {
       <div className="border-b bg-white shadow-sm">
       <ChatHeader
         onSearchClick={() => setSearchOpen((prev) => !prev)}
-        onMoreClick={() => console.log("Show more menu")}
+        onMoreClick={() => setShowChatOptions(true)}
         chatName={chat.name}
         profilePic={chat.picture}
         onBack={() => navigate("/chats")}
@@ -136,6 +139,8 @@ useEffect(() => {
           filteredMessages.length === 0
         }
         isSearchOpen={searchOpen}
+        isMuted={chat.isMuted}
+        isPinned={chat.isPinned}
       />
         {searchOpen && (
           <div className="px-4 py-2 border-t bg-gray-50">
@@ -209,6 +214,12 @@ useEffect(() => {
       >
         ↓
       </button>
+      <ChatOptionsModal
+        isOpen={showChatOptions}
+        onClose={() => setShowChatOptions(false)}
+        waId={chatId}
+      />
+
     </div>
   );
 }
