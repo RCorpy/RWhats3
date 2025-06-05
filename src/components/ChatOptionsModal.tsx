@@ -25,7 +25,7 @@ export default function ChatOptionsModal({ isOpen, onClose, waId }: ChatOptionsM
     };
   }, [isOpen, onClose]);
 
-  const handleAction = async (action: "pin" | "mute") => {
+  const handleAction = async (action: "pin" | "mute" | "block") => {
     try {
       await fetch(`/api/chat/${action}`, {
         method: "POST",
@@ -63,10 +63,10 @@ export default function ChatOptionsModal({ isOpen, onClose, waId }: ChatOptionsM
         </button>
 
         <button
-          disabled
-          className="w-full text-left mb-2 px-4 py-2 bg-gray-100 text-gray-400 cursor-not-allowed rounded"
+        onClick={() => handleAction("block")}
+          className="w-full text-left mb-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded"
         >
-          🚫 Block / Unblock (próximamente)
+          🚫 Block / Unblock
         </button>
 
         <button

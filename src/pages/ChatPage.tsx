@@ -141,6 +141,7 @@ useEffect(() => {
         isSearchOpen={searchOpen}
         isMuted={chat.isMuted}
         isPinned={chat.isPinned}
+        isBlocked={chat.isBlocked}
       />
         {searchOpen && (
           <div className="px-4 py-2 border-t bg-gray-50">

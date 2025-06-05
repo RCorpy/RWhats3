@@ -47,6 +47,7 @@ const sortedChats = Object.values(chats).sort((a, b) => {
           <ProfilePicture name={chat.name} profilePic={chat.picture} />
           <div className="flex-1 min-w-0">
             <div className="font-medium text-gray-900 truncate">
+              {chat.isBlocked && (<span title="This chat is blocked" className="text-red-500 ml-2">🚫</span>)}
               {chat.isPinned && <span title="Pinned">📌</span>}
               {chat.isMuted && <span title="Muted" className="mr-1">🔇</span>}
               {chat.name}

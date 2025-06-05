@@ -20,6 +20,7 @@ export interface Chat {
   participants?: Participant[]; // New field
   isMuted?: boolean;
   isPinned?: boolean;
+  isBlocked?: boolean;
 }
 
 interface ChatStore {

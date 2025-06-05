@@ -14,6 +14,7 @@ type Props = {
   isSearchOpen?: boolean;
   isMuted?: boolean;
   isPinned?: boolean;
+  isBlocked?: boolean;
 };
 
 export default function ChatHeader({
@@ -28,7 +29,8 @@ export default function ChatHeader({
   disableNext = false,
   isSearchOpen = false,
   isMuted = false,
-  isPinned = false
+  isPinned = false,
+  isBlocked = false
 }: Props) {
   return (
     <div className="px-4 py-3 flex justify-between items-start">
@@ -42,6 +44,7 @@ export default function ChatHeader({
         <div className="flex items-center mt-2 gap-2">
           <ProfilePicture name={chatName} profilePic={profilePic} />
           <h1 className="text-lg font-semibold">
+            {isBlocked && (<span title="This chat is blocked" className="text-red-500 ml-2">🚫</span>)}
             {isPinned && <span title="Pinned">📌</span>}
             {isMuted && <span title="Muted" className="text-gray-400">🔇</span>}
             {chatName}
