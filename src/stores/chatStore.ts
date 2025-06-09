@@ -6,6 +6,7 @@ export interface Participant {
   waId: string;
   name: string;
   color?: string; // Will be assigned in the frontend for display
+  isAdmin?: boolean
 }
 
 export interface Chat {
@@ -38,7 +39,6 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
   setChats: (chats) => {
     const chatMap: Record<string, Chat> = {};
     chats.forEach((chat) => {
-      console.log(chat)
       chatMap[chat.id] = chat;
     });
     set({ chats: chatMap });

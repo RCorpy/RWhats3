@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useChatStore } from '../stores/chatStore';
+import { useContactStore } from '../stores/contactStore';
 import { useNavigate } from 'react-router-dom';
 
 import ProfilePicture from "../components/ProfilePicture";
@@ -7,31 +8,37 @@ import ProfilePicture from "../components/ProfilePicture";
 export default function ChatListPage() {
   const chats = useChatStore((s) => s.chats);
   const setChats = useChatStore((s) => s.setChats);
+  const setContacts = useContactStore((s) => s.setContacts);
+
   const navigate = useNavigate();
 
-  // Fetch chats when component mounts
   useEffect(() => {
-    fetch("/api/chats")
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch chats");
-        return res.json();
-      })
-      .then((data) => {
-        setChats(data); // Populate Zustand store
+    Promise.all([
+      fetch("/api/chats"),
+      fetch("/api/contacts")
+    ])
+      .then(async ([chatsRes, contactsRes]) => {
+        if (!chatsRes.ok) throw new Error("Failed to fetch chats");
+        if (!contactsRes.ok) throw new Error("Failed to fetch contacts");
+
+        const chatsData = await chatsRes.json();
+        const contactsData = await contactsRes.json();
+        console.log("contactsData", contactsData)
+        setChats(chatsData);
+        setContacts(contactsData);
       })
       .catch((err) => {
-        console.error("Error loading chats:", err);
+        console.error("Error loading data:", err);
       });
-  }, [setChats]);
+  }, [setChats, setContacts]);
 
-const sortedChats = Object.values(chats).sort((a, b) => {
-  // Primero pinneados arriba
-  if (a.isPinned && !b.isPinned) return -1;
-  if (!a.isPinned && b.isPinned) return 1;
-  // Si ambos igual en pin, ordenar por timestamp descendente
-  return b.timestamp - a.timestamp;
-});
-
+  const sortedChats = Object.values(chats).sort((a, b) => {
+    // Primero pinneados arriba
+    if (a.isPinned && !b.isPinned) return -1;
+    if (!a.isPinned && b.isPinned) return 1;
+    // Si ambos igual en pin, ordenar por timestamp descendente
+    return b.timestamp - a.timestamp;
+  });
 
   return (
     <div className="bg-white h-screen overflow-y-auto">
@@ -60,5 +67,4 @@ const sortedChats = Object.values(chats).sort((a, b) => {
       ))}
     </div>
   );
-
 }
