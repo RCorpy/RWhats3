@@ -29,6 +29,8 @@ export default function ChatPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
   const [showChatOptions, setShowChatOptions] = useState(false);
+  const [referencedMessageContent, setReferencedMessageContent] = useState<string | null>(null);
+
 
 
   const [coloredParticipants, setColoredParticipants] = useState<Participant[]>([]);
@@ -137,7 +139,7 @@ useEffect(() => {
       useMessageStore.getState().updateMessage(chatId!, messageId, {
         content: "Este mensaje ha sido eliminado",
         file: undefined,
-        referenceId: undefined,
+        referenceContent: undefined,
       });
 
     } catch (error) {
@@ -145,6 +147,9 @@ useEffect(() => {
     }
   };
 
+  const onReference = (content: string) => {
+    setReferencedMessageContent(content);
+  };
 
   return (
     <div className="flex flex-col h-screen bg-gray-200">
@@ -215,6 +220,7 @@ useEffect(() => {
               senderName={participant?.name}
               senderNameColor={participant?.color}
               onDeleteMessage={deleteMessage}
+              onReference={onReference}
             />
           );
         })}
@@ -230,8 +236,12 @@ useEffect(() => {
       <MessageInput
         value={newMessage}
         onChange={setNewMessage}
-        onSend={(msg, file) => {
-          sendMessage(msg, file, null);
+        onSend={(msg, file, referenceContent) => {
+          sendMessage(msg, file, referenceContent);
+        }}
+        referencedMessageContent={referencedMessageContent}
+        onCancelReference={() => {
+          setReferencedMessageContent(null);
         }}
         //disabled={sending}
         //error={error ?? undefined}

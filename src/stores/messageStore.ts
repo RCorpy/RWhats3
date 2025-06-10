@@ -16,7 +16,7 @@ export interface Message {
   timestamp: number;
   status: MessageStatus;
   file?: File | string;
-  referenceId?: string;
+  referenceContent?: string;
 }
 
 interface MessageStore {

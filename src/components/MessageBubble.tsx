@@ -10,6 +10,7 @@ interface MessageBubbleProps {
     status: MessageStatus;
     file?: File | string;
     fileName?: string;
+    referencedContent?: string;
   };
   showDateChip: boolean;
   dateChipLabel: string;
@@ -17,15 +18,17 @@ interface MessageBubbleProps {
   senderName?: string; 
   senderNameColor?: string;
   onDeleteMessage?: (messageId: string, requesterId: string) => void;
+  onReference?: (content: string) => void; 
 }
 
 const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
-  ({ msg, showDateChip, dateChipLabel, isGroup, senderName, senderNameColor, onDeleteMessage}, ref) => {
+  ({ msg, showDateChip, dateChipLabel, isGroup, senderName, senderNameColor, onDeleteMessage, onReference}, ref) => {
     const fromMe = msg.senderId === "me";
     const isFile = !!msg.file;
     const [showOptions, setShowOptions] = useState(false);
     const toggleOptions = () => setShowOptions(!showOptions);
     let fileElement: ReactNode = null;
+    let referencedElement: ReactNode = null;
 
     if (msg.file) {
       if (typeof msg.file === "string") {
@@ -57,6 +60,15 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
         );
       }
     }
+    if (msg.referencedContent){
+        referencedElement = (
+          <div className="p-2 rounded bg-lime-200 text-black">
+            <div className="font-bold text-sm flex items-center gap-2">
+              {msg.referencedContent}
+            </div>
+          </div>
+        );
+    }
 
     const bubbleAlignmentClass = fromMe ? "ml-auto" : "mr-auto";
     // Conditional background based on sender and file presence
@@ -85,6 +97,7 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
           )}
           <div className="flex flex-col gap-2">
             {fileElement}
+            {referencedElement}
             {msg.content && msg.content.trim() !== "" && ( // Ensure content is checked for null/undefined too
               <div className="whitespace-pre-line">{msg.content}</div>
             )}
@@ -132,6 +145,7 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
                   className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
                   onClick={() => {
                     setShowOptions(false);
+                    onReference(msg.content.trim())
                     console.log("📌 Referenciar mensaje", msg.id);
                     // Aquí llamas a una función global/store para referenciar
                   }}

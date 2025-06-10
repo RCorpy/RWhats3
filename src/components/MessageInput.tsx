@@ -4,9 +4,11 @@ import { Paperclip, Send, X } from "lucide-react";
 type Props = {
   value: string;
   onChange: (val: string) => void;
-  onSend: (message: string, file?: File) => void; // Changed
+  onSend: (message: string, file?: File, referenceContent?: string) => void; // Changed
   disabled?: boolean;
   error?: string;
+  referencedMessageContent?: string;
+  onCancelReference: () => void;
 };
 
 export default function MessageInput({
@@ -15,6 +17,8 @@ export default function MessageInput({
   onSend,
   disabled,
   error,
+  referencedMessageContent,
+  onCancelReference
 }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -32,7 +36,8 @@ export default function MessageInput({
   const handleSend = () => {
     if (!value.trim() && !selectedFile) return;
 
-    onSend(value.trim(), selectedFile || undefined);
+    onSend(value.trim(), selectedFile || undefined, referencedMessageContent || undefined);
+    onCancelReference();
     onChange(""); // Clear the text input
     setSelectedFile(null); // Clear the file
   };
@@ -55,6 +60,14 @@ export default function MessageInput({
           >
             <X className="w-4 h-4" />
           </button>
+        </div>
+      )}
+      {referencedMessageContent && (
+        <div className="reference-preview">
+          <p className="text-sm text-gray-500">
+            Respondiendo a: {referencedMessageContent}
+          </p>
+          <button onClick={onCancelReference}>Cancelar</button>
         </div>
       )}
 

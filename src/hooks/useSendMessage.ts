@@ -17,7 +17,7 @@ export function useSendMessage(chatId?: string) {
   const sendMessage = async (
     content: string,
     file?: File,
-    referenceId?: string
+    referenceContent?: string
   ) => {
     if (!chatId || (!content && !file) || sending) return;
 
@@ -35,7 +35,7 @@ export function useSendMessage(chatId?: string) {
       timestamp,
       status: MessageStatus.SENDING,
       file: file ? URL.createObjectURL(file) : undefined,
-      referenceId,
+      referenceContent,
     };
 
     addMessage(chatId, tempMsg);
@@ -48,8 +48,8 @@ export function useSendMessage(chatId?: string) {
       formData.append("content", content || `[FILE:${file?.name}]`);
       formData.append("timestamp", String(timestamp));
       if (file) formData.append("file", file);
-      if (referenceId) formData.append("referenceId", referenceId);
-
+      if (referenceContent) formData.append("referenceContent", referenceContent);
+      console.log("referenceContent: ", referenceContent);
       const res = await fetch("/api/messages", {
         method: "POST",
         body: formData,
