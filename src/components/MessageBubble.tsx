@@ -147,6 +147,7 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
                 >
                   Reaccionar
                 </button>
+
                 <button
                   className="block w-full text-left px-4 py-2 hover:bg-red-100 text-sm text-red-600"
                   onClick={() => {
