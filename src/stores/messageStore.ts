@@ -28,6 +28,7 @@ interface MessageStore {
   updateMessageStatus: (chatId: string, messageId: string, status: MessageStatus) => void;
   removeMessage: (chatId: string, messageId: string) => void;
   clearMessages: () => void;
+  updateMessage: (chatId: string, messageId: string, partialUpdate: Partial<Message>) => void;
 }
 
 export const useMessageStore = create<MessageStore>()((set, get) => ({
@@ -105,6 +106,28 @@ export const useMessageStore = create<MessageStore>()((set, get) => ({
         },
       };
     }),
+  updateMessage: (
+    chatId: string,
+    messageId: string,
+    partialUpdate: Partial<Message>
+  ) =>
+    set((state) => {
+      const msgs = state.messages[chatId] || [];
+      const index = msgs.findIndex((m) => m.id === messageId);
+      if (index === -1) return state;
+
+      const updatedMsg = { ...msgs[index], ...partialUpdate };
+      const updatedMsgs = [...msgs];
+      updatedMsgs[index] = updatedMsg;
+
+      return {
+        messages: {
+          ...state.messages,
+          [chatId]: updatedMsgs,
+        },
+      };
+    }),
+
 
   clearMessages: () => set({ messages: {} }),
 }));

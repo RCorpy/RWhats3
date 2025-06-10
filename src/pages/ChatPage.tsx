@@ -114,6 +114,37 @@ useEffect(() => {
   let lastRenderedDate = "";
 
 
+  const deleteMessage = async (messageId: string, requesterId: string) => {
+    try {
+      const response = await fetch("/api/messages/delete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messageId,
+          requesterId,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        console.error("Error deleting message:", error.detail);
+        return;
+      }
+
+      // Update frontend store only after successful deletion
+      useMessageStore.getState().updateMessage(chatId!, messageId, {
+        content: "Este mensaje ha sido eliminado",
+        file: undefined,
+        referenceId: undefined,
+      });
+
+    } catch (error) {
+      console.error("Unexpected error deleting message:", error);
+    }
+  };
+
 
   return (
     <div className="flex flex-col h-screen bg-gray-200">
@@ -183,6 +214,7 @@ useEffect(() => {
               isGroup={chat.isGroup}
               senderName={participant?.name}
               senderNameColor={participant?.color}
+              onDeleteMessage={deleteMessage}
             />
           );
         })}

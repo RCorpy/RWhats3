@@ -16,10 +16,11 @@ interface MessageBubbleProps {
   isGroup?: boolean;   
   senderName?: string; 
   senderNameColor?: string;
+  onDeleteMessage?: (messageId: string, requesterId: string) => void;
 }
 
 const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
-  ({ msg, showDateChip, dateChipLabel, isGroup, senderName, senderNameColor }, ref) => {
+  ({ msg, showDateChip, dateChipLabel, isGroup, senderName, senderNameColor, onDeleteMessage}, ref) => {
     const fromMe = msg.senderId === "me";
     const isFile = !!msg.file;
     const [showOptions, setShowOptions] = useState(false);
@@ -152,6 +153,7 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
                   className="block w-full text-left px-4 py-2 hover:bg-red-100 text-sm text-red-600"
                   onClick={() => {
                     setShowOptions(false);
+                    onDeleteMessage?.(msg.id, msg.senderId);
                     console.log("🗑️ Borrar mensaje", msg.id);
                     // Aquí llamas al store para borrarlo
                   }}
