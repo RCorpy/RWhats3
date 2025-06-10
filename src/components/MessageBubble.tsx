@@ -1,4 +1,4 @@
-import React, { forwardRef, ReactNode } from "react";
+import React, { forwardRef, ReactNode, useState  } from "react";
 import { MessageStatus } from "../stores/messageStore";
 
 interface MessageBubbleProps {
@@ -22,7 +22,8 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
   ({ msg, showDateChip, dateChipLabel, isGroup, senderName, senderNameColor }, ref) => {
     const fromMe = msg.senderId === "me";
     const isFile = !!msg.file;
-
+    const [showOptions, setShowOptions] = useState(false);
+    const toggleOptions = () => setShowOptions(!showOptions);
     let fileElement: ReactNode = null;
 
     if (msg.file) {
@@ -118,6 +119,47 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
               </>
             )}
           </div>
+          {/* Botón de opciones */}
+          <div className="absolute top-1 right-1">
+            <button
+              onClick={toggleOptions}
+              className="text-gray-500 hover:text-gray-700"
+            >⋮</button>
+            {showOptions && (
+              <div className="absolute right-0 mt-2 w-36 bg-white border rounded shadow-md z-50">
+                <button
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                  onClick={() => {
+                    setShowOptions(false);
+                    console.log("📌 Referenciar mensaje", msg.id);
+                    // Aquí llamas a una función global/store para referenciar
+                  }}
+                >
+                  Referenciar
+                </button>
+                <button
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                  onClick={() => {
+                    setShowOptions(false);
+                    console.log("❤️ Reaccionar a mensaje", msg.id);
+                    // Aquí podrías abrir una mini UI de reacciones o algo simple por ahora
+                  }}
+                >
+                  Reaccionar
+                </button>
+                <button
+                  className="block w-full text-left px-4 py-2 hover:bg-red-100 text-sm text-red-600"
+                  onClick={() => {
+                    setShowOptions(false);
+                    console.log("🗑️ Borrar mensaje", msg.id);
+                    // Aquí llamas al store para borrarlo
+                  }}
+                >
+                  Borrar
+                </button>
+              </div>
+            )}
+            </div>
         </div>
       </div>
     );
