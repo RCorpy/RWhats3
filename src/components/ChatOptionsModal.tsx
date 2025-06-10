@@ -11,6 +11,8 @@ interface ChatOptionsModalProps {
 
 export default function ChatOptionsModal({ isOpen, onClose, waId }: ChatOptionsModalProps) {
   const modalRef = useRef<HTMLDivElement | null>(null);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+
   const { user } = useUserStore();
   const chat = useChatStore((state) => state.chats[waId]);
   const [modalType, setModalType] = useState<"add" | "remove" | null>(null);
@@ -21,7 +23,7 @@ export default function ChatOptionsModal({ isOpen, onClose, waId }: ChatOptionsM
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
         onClose();
       }
     }
@@ -34,6 +36,7 @@ export default function ChatOptionsModal({ isOpen, onClose, waId }: ChatOptionsM
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen, onClose]);
+
 
   const handleAction = async (action: "pin" | "mute" | "block") => {
     try {
@@ -51,7 +54,7 @@ export default function ChatOptionsModal({ isOpen, onClose, waId }: ChatOptionsM
   if (!isOpen) return null;
 
   return (
-    <>
+    <div ref={wrapperRef}>
       <div
         ref={modalRef}
         className="absolute top-16 right-4 z-40 bg-white border shadow-lg rounded-xl p-4 w-64"
@@ -112,6 +115,6 @@ export default function ChatOptionsModal({ isOpen, onClose, waId }: ChatOptionsM
           onClose={() => setModalType(null)}
         />
       )}
-    </>
+    </div>
   );
 }

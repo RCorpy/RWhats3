@@ -24,23 +24,23 @@ export default function ManageParticipantsModal({
       ? contactList.filter((c) => !groupParticipants.includes(c.id))
       : contactList.filter((c) => groupParticipants.includes(c.id));
 
-  const handleAction = async (participantWaId: string) => {
-    
+  const handleAction = async (waId: string) => {
+    console.log("sending:", { groupWaId, waId });
+    console.log("type: ", type);
+    const url = `/api/chat/${type === "add" ? "add-participant" : "remove-participant"}/${waId}?groupWaId=${groupWaId}`;
     try {
-      await fetch(
-        `/api/chat/${type === "add" ? "add-participant" : "remove-participant"}`,
-        {
+        const res = await fetch(url, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ groupWaId, participantWaId }),
-        }
-      );
+        });
+
+        const data = await res.json();
+        console.log(data);
       onClose();
     } catch (error) {
       console.error(`Error al ${type === "add" ? "agregar" : "quitar"}:`, error);
     }
   };
-  console.log("contacts: ", contactList);
+  //console.log("contacts: ", contactList);
   return (
     <div className="fixed top-20 right-4 z-50 bg-white border shadow-xl rounded-lg p-4 w-80 max-h-[80vh] overflow-auto">
       <h3 className="text-lg font-semibold mb-3">
@@ -51,6 +51,7 @@ export default function ManageParticipantsModal({
         candidates.map((contact) => (
           <button
             key={contact.id}
+            type="button"
             onClick={() => handleAction(contact.id)}
             className="w-full text-left mb-2 px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-sm"
           >
