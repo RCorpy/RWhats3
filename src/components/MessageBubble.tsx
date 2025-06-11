@@ -168,7 +168,7 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
               className="text-gray-500 hover:text-gray-700"
             >⋮</button>
             <div ref={reactionRef}>
-            {msg.reactions && msg.reactions.length > 0 && (
+                        {msg.reactions && msg.reactions.length > 0 && (
               <div className="flex gap-1 mt-1 px-2 py-1 rounded-full bg-gray-100 w-fit text-sm">
                 {Object.entries(
                   msg.reactions.reduce((acc, r) => {
