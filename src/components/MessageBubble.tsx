@@ -131,36 +131,58 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
             )}
           </div>
 
-          <div
-            className={`text-xs flex justify-end gap-1 mt-1 ${
-              isFile ? "text-gray-200" : "text-gray-600"
-            }`}
-          >
-            <span>
-              {new Date(msg.timestamp).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </span>
+  <div
+    className={`text-xs flex justify-between items-end mt-1 ${
+      isFile ? "text-gray-200" : "text-gray-600"
+    }`}
+  >
+    {/* LEFT: Emoji Reactions */}
+    {msg.reactions && msg.reactions.length > 0 ? (
+      <div className="flex gap-1 px-2 py-1 rounded-full bg-gray-100 w-fit text-sm translate-y-[2em]">
+        {Object.entries(
+          msg.reactions.reduce((acc, r) => {
+            acc[r.emoji] = (acc[r.emoji] || 0) + 1;
+            return acc;
+          }, {} as Record<string, number>)
+        ).map(([emoji, count]) => (
+          <span key={emoji}>
+            {emoji} {count > 1 ? count : null}
+          </span>
+        ))}
+      </div>
+    ) : (
+      <div />
+    )}
 
-            {fromMe && (
-              <>
-                {msg.status === MessageStatus.DELIVERED && (
-                  <DoubleCheckIcon
-                    className={isFile ? "text-gray-300" : "text-gray-500"}
-                  />
-                )}
-                {msg.status === MessageStatus.SENT && (
-                  <SingleCheckIcon
-                    className={isFile ? "text-gray-300" : "text-gray-500"}
-                  />
-                )}
-                {msg.status === MessageStatus.READ && (
-                  <DoubleCheckIcon className="text-blue-200" />
-                )}
-              </>
-            )}
-          </div>
+  {/* RIGHT: Time + Status */}
+  <div className="flex items-center gap-1">
+    <span>
+      {new Date(msg.timestamp).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      })}
+    </span>
+
+    {fromMe && (
+      <>
+        {msg.status === MessageStatus.DELIVERED && (
+          <DoubleCheckIcon
+            className={isFile ? "text-gray-300" : "text-gray-500"}
+          />
+        )}
+        {msg.status === MessageStatus.SENT && (
+          <SingleCheckIcon
+            className={isFile ? "text-gray-300" : "text-gray-500"}
+          />
+        )}
+        {msg.status === MessageStatus.READ && (
+          <DoubleCheckIcon className="text-blue-200" />
+        )}
+      </>
+    )}
+  </div>
+</div>
+
           {/* Botón de opciones */}
           <div className="absolute top-1 right-1">
             <button
@@ -168,21 +190,9 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
               className="text-gray-500 hover:text-gray-700"
             >⋮</button>
             <div ref={reactionRef}>
-                        {msg.reactions && msg.reactions.length > 0 && (
-              <div className="flex gap-1 mt-1 px-2 py-1 rounded-full bg-gray-100 w-fit text-sm">
-                {Object.entries(
-                  msg.reactions.reduce((acc, r) => {
-                    acc[r.emoji] = (acc[r.emoji] || 0) + 1;
-                    return acc;
-                  }, {} as Record<string, number>)
-                ).map(([emoji, count]) => (
-                  <span key={emoji}>{emoji} {count > 1 ? count : null}</span>
-                ))}
-              </div>
-            )}
 
             {showReactions && (
-                <div className="absolute bottom-full mb-1 right-0 bg-white border shadow-lg rounded-xl p-1 flex gap-1 z-20">
+                <div className="absolute bottom-full mb-1 left-0 bg-white border shadow-lg rounded-xl p-1 flex gap-1 z-20">
                   {reactions.map((emoji) => (
                     <button
                       key={emoji}

@@ -169,9 +169,12 @@ useEffect(() => {
       }
 
       // Update frontend store for new emoji
-      useMessageStore.getState().updateMessage(chatId!, messageId, {
-        emojis: [...(messages?.find((m) => m.id === messageId)?.emojis || []), emoji],
-      });
+    useMessageStore.getState().updateMessage(chatId!, messageId, {
+      reactions: [
+        ...(messages?.find((m) => m.id === messageId)?.reactions || []),
+        { emoji, user: "me" }
+      ],
+    });
 
     } catch (error) {
       console.error("Unexpected error deleting message:", error);
