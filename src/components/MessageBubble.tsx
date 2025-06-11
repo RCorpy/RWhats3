@@ -1,5 +1,5 @@
-import React, { forwardRef, ReactNode, useState  } from "react";
-import { MessageStatus } from "../stores/messageStore";
+import React, { forwardRef, ReactNode, useState, useEffect, useRef  } from "react";
+import { MessageStatus, Reaction } from "../stores/messageStore";
 
 interface MessageBubbleProps {
   msg: {
@@ -11,6 +11,7 @@ interface MessageBubbleProps {
     file?: File | string;
     fileName?: string;
     referencedContent?: string;
+    reactions?: Reaction[];
   };
   showDateChip: boolean;
   dateChipLabel: string;
@@ -18,17 +19,44 @@ interface MessageBubbleProps {
   senderName?: string; 
   senderNameColor?: string;
   onDeleteMessage?: (messageId: string, requesterId: string) => void;
-  onReference?: (content: string) => void; 
+  onReference?: (content: string) => void;
+  onReact?: (messageId: string, emoji: string) => void;
 }
 
 const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
-  ({ msg, showDateChip, dateChipLabel, isGroup, senderName, senderNameColor, onDeleteMessage, onReference}, ref) => {
+  ({ msg, showDateChip, dateChipLabel, isGroup, senderName, senderNameColor, onDeleteMessage, onReference, onReact}, ref) => {
     const fromMe = msg.senderId === "me";
     const isFile = !!msg.file;
     const [showOptions, setShowOptions] = useState(false);
+    const [showReactions, setShowReactions] = useState(false);
     const toggleOptions = () => setShowOptions(!showOptions);
     let fileElement: ReactNode = null;
     let referencedElement: ReactNode = null;
+    const reactions = ["👍", "😊", "😂", "🎉", "😮", "❤️"];
+  
+    const reactionRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+      function handleClickOutside(event: MouseEvent) {
+        if (
+          reactionRef.current &&
+          !reactionRef.current.contains(event.target as Node)
+        ) {
+          setShowReactions(false);
+          setShowOptions(false);
+        }
+      }
+
+      if (showOptions || showReactions) {
+        document.addEventListener("mousedown", handleClickOutside);
+      }
+
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }, [showReactions, showOptions]);
+
+
 
     if (msg.file) {
       if (typeof msg.file === "string") {
@@ -139,8 +167,49 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
               onClick={toggleOptions}
               className="text-gray-500 hover:text-gray-700"
             >⋮</button>
+            <div ref={reactionRef}>
+            {msg.reactions && msg.reactions.length > 0 && (
+              <div className="flex gap-1 mt-1 px-2 py-1 rounded-full bg-gray-100 w-fit text-sm">
+                {Object.entries(
+                  msg.reactions.reduce((acc, r) => {
+                    acc[r.emoji] = (acc[r.emoji] || 0) + 1;
+                    return acc;
+                  }, {} as Record<string, number>)
+                ).map(([emoji, count]) => (
+                  <span key={emoji}>{emoji} {count > 1 ? count : null}</span>
+                ))}
+              </div>
+            )}
+
+            {showReactions && (
+                <div className="absolute bottom-full mb-1 right-0 bg-white border shadow-lg rounded-xl p-1 flex gap-1 z-20">
+                  {reactions.map((emoji) => (
+                    <button
+                      key={emoji}
+                      onClick={() => {
+                        onReact(msg.id, emoji);
+                        setShowReactions(false);
+                      }}
+                      className="text-xl hover:scale-110 transition-transform"
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              )}
             {showOptions && (
               <div className="absolute right-0 mt-2 w-36 bg-white border rounded shadow-md z-50">
+                <button
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                  onClick={() => {
+                    setShowOptions(false);
+                    setShowReactions(true)
+                    console.log("❤️ Reaccionar a mensaje", msg.id);
+                    // Aquí podrías abrir una mini UI de reacciones o algo simple por ahora
+                  }}
+                >
+                  Reaccionar
+                </button>
                 <button
                   className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
                   onClick={() => {
@@ -152,17 +221,6 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
                 >
                   Referenciar
                 </button>
-                <button
-                  className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
-                  onClick={() => {
-                    setShowOptions(false);
-                    console.log("❤️ Reaccionar a mensaje", msg.id);
-                    // Aquí podrías abrir una mini UI de reacciones o algo simple por ahora
-                  }}
-                >
-                  Reaccionar
-                </button>
-
                 <button
                   className="block w-full text-left px-4 py-2 hover:bg-red-100 text-sm text-red-600"
                   onClick={() => {
@@ -176,6 +234,7 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
                 </button>
               </div>
             )}
+            </div>
             </div>
         </div>
       </div>

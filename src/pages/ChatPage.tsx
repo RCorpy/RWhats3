@@ -147,6 +147,37 @@ useEffect(() => {
     }
   };
 
+    const onReact = async (messageId: string, emoji: string) => {
+    try {
+      const response = await fetch("/api/messages/react", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messageId,
+          requesterId: "me",
+          emoji,
+          chatId
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        console.error("Error deleting message:", error.detail);
+        return;
+      }
+
+      // Update frontend store for new emoji
+      useMessageStore.getState().updateMessage(chatId!, messageId, {
+        emojis: [...(messages?.find((m) => m.id === messageId)?.emojis || []), emoji],
+      });
+
+    } catch (error) {
+      console.error("Unexpected error deleting message:", error);
+    }
+  };
+
   const onReference = (content: string) => {
     setReferencedMessageContent(content);
   };
@@ -221,6 +252,7 @@ useEffect(() => {
               senderNameColor={participant?.color}
               onDeleteMessage={deleteMessage}
               onReference={onReference}
+              onReact={onReact}
             />
           );
         })}

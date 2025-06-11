@@ -8,6 +8,11 @@ export enum MessageStatus {
   SENDING = "sending",
 }
 
+export interface Reaction {
+  user: string;
+  emoji: string;
+}
+
 export interface Message {
   id: string;
   chatId: string;
@@ -17,6 +22,7 @@ export interface Message {
   status: MessageStatus;
   file?: File | string;
   referenceContent?: string;
+  reactions?: Reaction[];
 }
 
 interface MessageStore {
