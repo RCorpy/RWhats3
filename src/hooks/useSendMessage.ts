@@ -34,7 +34,7 @@ export function useSendMessage(chatId?: string) {
       content: file ? file.name : content,
       timestamp,
       status: MessageStatus.SENDING,
-      file: file ? URL.createObjectURL(file) : undefined,
+      file: undefined,
       referenceContent,
     };
 

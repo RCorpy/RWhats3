@@ -20,7 +20,7 @@ export interface Message {
   content: string;
   timestamp: number;
   status: MessageStatus;
-  file?: File | string;
+  file?: string;
   referenceContent?: string;
   reactions?: Reaction[];
 }
