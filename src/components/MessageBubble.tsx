@@ -81,9 +81,6 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
               alt={displayFileName}
               className="rounded max-h-64 w-auto object-cover border"
             />
-            <div className="text-xs mt-1 text-center text-gray-500">
-              {displayFileName}
-            </div>
           </div>
         );
       }
