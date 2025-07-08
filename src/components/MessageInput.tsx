@@ -11,6 +11,13 @@ type Props = {
   onCancelReference: () => void;
 };
 
+const MAX_SIZE_BY_TYPE: { [key: string]: number } = {
+  "image": 5,
+  "video": 16,
+  "audio": 16,
+  "application": 100, // pdf, doc, xls fall under "application/*"
+};
+
 export default function MessageInput({
   value,
   onChange,
@@ -28,8 +35,18 @@ export default function MessageInput({
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const fileTypeCategory = file.type.split("/")[0]; // "image", "video", "audio", etc.
+      const maxSizeMB = MAX_SIZE_BY_TYPE[fileTypeCategory] || 100;
+
+      const fileSizeMB = file.size / (1024 * 1024);
+      if (fileSizeMB > maxSizeMB) {
+        alert(`El archivo es demasiado grande. Máximo permitido para ${fileTypeCategory}: ${maxSizeMB} MB.`);
+        e.target.value = ""; // Reset file input
+        return;
+      }
+
       setSelectedFile(file);
-      e.target.value = ""; // reset input
+      e.target.value = ""; // Reset file input
     }
   };
 
@@ -78,6 +95,14 @@ export default function MessageInput({
           ref={fileInputRef}
           onChange={handleFileSelect}
           className="hidden"
+            accept="
+              .pdf,
+              image/*,
+              video/*,
+              audio/*,
+              .doc,.docx,
+              .xls,.xlsx
+            "
         />
 
         {/* Attach button */}
