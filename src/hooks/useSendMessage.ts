@@ -31,7 +31,7 @@ export function useSendMessage(chatId?: string) {
       id: tempId,
       chatId,
       senderId: "me",
-      content: file ? file.name : content,
+      content: content,
       timestamp,
       status: MessageStatus.SENDING,
       file: undefined,
@@ -45,7 +45,7 @@ export function useSendMessage(chatId?: string) {
       formData.append("id", tempId);
       formData.append("chatId", chatId);
       formData.append("senderId", "me");
-      formData.append("content", content || `[FILE:${file?.name}]`);
+      formData.append("content", content || ``);
       formData.append("timestamp", String(timestamp));
       if (file) formData.append("file", file);
       if (referenceContent) formData.append("referenceContent", referenceContent);
