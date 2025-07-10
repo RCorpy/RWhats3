@@ -36,14 +36,25 @@ export default function MessageInput({
     const file = e.target.files?.[0];
     if (file) {
       const fileTypeCategory = file.type.split("/")[0]; // "image", "video", "audio", etc.
+      if (fileTypeCategory === "application"){
+        const file_extension = file.type.split("/")[1]
+        if (file_extension !== "pdf" && file_extension !== "doc" && file_extension !== "xls" && file_extension !=="docx" && file_extension !=="xlsx" && file_extension !=="txt"){
+          alert(`El archivo no tiene un formato permitido.`);
+          e.target.value = ""; // Reset file input
+          return;
+        }
+        
+      }
       const maxSizeMB = MAX_SIZE_BY_TYPE[fileTypeCategory] || 100;
 
       const fileSizeMB = file.size / (1024 * 1024);
+
       if (fileSizeMB > maxSizeMB) {
         alert(`El archivo es demasiado grande. Máximo permitido para ${fileTypeCategory}: ${maxSizeMB} MB.`);
         e.target.value = ""; // Reset file input
         return;
       }
+
 
       setSelectedFile(file);
       e.target.value = ""; // Reset file input
