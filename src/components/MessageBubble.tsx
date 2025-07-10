@@ -76,11 +76,18 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
 
         fileElement = (
           <div className="rounded overflow-hidden max-w-xs">
-            <img
-              src={imageUrl}
-              alt={displayFileName}
-              className="rounded max-h-64 w-auto object-cover border"
-            />
+            <a
+              href={imageUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Abrir imagen en nueva pestaña"
+            >
+              <img
+                src={imageUrl}
+                alt={displayFileName}
+                className="rounded max-h-64 w-auto object-cover border cursor-pointer hover:brightness-90 transition"
+              />
+            </a>
           </div>
         );
       }
