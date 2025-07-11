@@ -151,9 +151,9 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
     // Background color logic
     let bubbleBgColor = "";
     if (fromMe) {
-      bubbleBgColor = isFile ? "bg-lime-600 text-white" : "bg-lime-300 text-black";
+      bubbleBgColor = isFile ? "bg-lime-300 text-black" : "bg-lime-300 text-black";
     } else {
-      bubbleBgColor = isFile ? "bg-stone-500 text-white" : "bg-stone-50 text-black";
+      bubbleBgColor = isFile ? "bg-stone-50 text-black" : "bg-stone-50 text-black";
     }
 
     return (
@@ -183,7 +183,7 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
 
           {/* Time + Status + Reactions */}
           <div
-            className={`text-xs flex justify-between items-end mt-1 ${isFile ? "text-gray-200" : "text-gray-600"}`}
+            className={`text-xs flex justify-between items-end mt-1 ${isFile ? "text-gray-600" : "text-gray-600"}`}
           >
             {/* LEFT: Emoji Reactions */}
             {msg.reactions && msg.reactions.length > 0 ? (
@@ -215,10 +215,10 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
               {fromMe && (
                 <>
                   {msg.status === MessageStatus.DELIVERED && (
-                    <DoubleCheckIcon className={isFile ? "text-gray-300" : "text-gray-500"} />
+                    <DoubleCheckIcon className={isFile ? "text-gray-500" : "text-gray-500"} />
                   )}
                   {msg.status === MessageStatus.SENT && (
-                    <SingleCheckIcon className={isFile ? "text-gray-300" : "text-gray-500"} />
+                    <SingleCheckIcon className={isFile ? "text-gray-500" : "text-gray-500"} />
                   )}
                   {msg.status === MessageStatus.READ && (
                     <DoubleCheckIcon className="text-blue-200" />
@@ -255,6 +255,17 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
 
               {showOptions && (
                 <div className="absolute right-0 mt-2 w-36 bg-white border rounded shadow-md z-50">
+                  {isFile && (
+                    <button
+                      className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                      onClick={() => {
+                        setShowOptions(false);
+                        onDownloadFile?.(msg.file);
+                      }}
+                    >
+                      Descargar
+                    </button>
+                  )}
                   <button
                     className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
                     onClick={() => {
@@ -311,4 +322,14 @@ function DoubleCheckIcon({ className = "" }) {
     </svg>
 
   );
+}
+
+function onDownloadFile(fileUrl: string, fileName?: string) {
+  const link = document.createElement("a");
+  link.href = fileUrl;
+  link.download = fileName || fileUrl.split("/").pop() || "archivo";
+  link.target = "_blank";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
