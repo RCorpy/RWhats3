@@ -66,6 +66,8 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
 
       const isVideo =/\.(mp4|webm|ogg|mov|avi|mkv)$/i.test(msg.file)
 
+      const isAudio = /\.(mp3|wav|ogg|m4a|aac)$/i.test(msg.file);
+
       const isTemporaryRemote = msg.file.includes("/temp/");
 
       const displayFileName = msg.fileName || (msg.file.includes("/") ? msg.file.split("/").pop() : "archivo");
@@ -103,6 +105,27 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
             src={videoUrl}
             className="rounded max-h-64 w-full object-cover border"
           />
+        </div>
+      );
+    }
+
+      // 3. Audio player
+    else if (isAudio) {
+      const audioUrl = msg.file;
+
+      fileElement = (
+        <div className="rounded overflow-hidden bg-gray-200 p-3 max-w-xs flex items-center gap-3">
+          <audio controls className="w-full">
+            <source src={audioUrl} />
+            Tu navegador no soporta audio HTML5.
+          </audio>
+          <a
+            href={audioUrl}
+            download={displayFileName}
+            className="text-blue-600 underline text-sm"
+          >
+            Descargar
+          </a>
         </div>
       );
     }
@@ -260,7 +283,7 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
                       className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
                       onClick={() => {
                         setShowOptions(false);
-                        onDownloadFile?.(msg.file);
+                        onDownloadFile?.(msg);
                       }}
                     >
                       Descargar
@@ -324,12 +347,12 @@ function DoubleCheckIcon({ className = "" }) {
   );
 }
 
-function onDownloadFile(fileUrl: string, fileName?: string) {
+function onDownloadFile(msg) {
+  const fileName = msg.file.split("/").pop();
   const link = document.createElement("a");
-  link.href = fileUrl;
-  link.download = fileName || fileUrl.split("/").pop() || "archivo";
-  link.target = "_blank";
+  link.href = `https://www.bricopoxi.com/download/${fileName}`;
+  link.download = fileName;
   document.body.appendChild(link);
   link.click();
-  document.body.removeChild(link);
+  document.body.removeChild(link);  
 }
