@@ -32,6 +32,10 @@ export default function MessageInput({
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
+  const [isRecording, setIsRecording] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+  const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -59,6 +63,39 @@ export default function MessageInput({
       setSelectedFile(file);
       e.target.value = ""; // Reset file input
     }
+  };
+
+  const handleStartRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) setRecordedChunks(prev => [...prev, e.data]);
+      };
+
+      recorder.onstop = () => {
+        const audioBlob = new Blob(recordedChunks, { type: 'audio/webm' }); // OGG not widely supported for recording
+        const audioFile = new File([audioBlob], `grabacion-${Date.now()}.webm`, {
+          type: 'audio/webm',
+        });
+        setSelectedFile(audioFile);
+        setRecordedChunks([]);
+      };
+
+      recorder.start();
+      setMediaRecorder(recorder);
+      setIsRecording(true);
+    } catch (err) {
+      alert("No se pudo acceder al micrófono.");
+      console.error(err);
+    }
+  };
+
+  const handleStopRecording = () => {
+    mediaRecorder?.stop();
+    setIsRecording(false);
+    mediaRecorder?.stream.getTracks().forEach(track => track.stop()); // Stop mic access
   };
 
   const handleSend = () => {
@@ -124,6 +161,20 @@ export default function MessageInput({
           disabled={disabled}
         >
           <Paperclip className="w-5 h-5" />
+        </button>
+
+        {/* Audio Record button */}
+        <button
+          type="button"
+          onClick={isRecording ? handleStopRecording : handleStartRecording}
+          className={`text-${isRecording ? "red" : "gray"}-600 hover:text-${isRecording ? "red" : "gray"}-800`}
+          disabled={disabled}
+        >
+          {isRecording ? (
+            <span className="text-xs">⏺️ Grabando...</span>
+          ) : (
+            <span className="text-lg">🎤</span>
+          )}
         </button>
 
         {/* Message input */}
