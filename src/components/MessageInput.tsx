@@ -34,7 +34,8 @@ export default function MessageInput({
 
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
-  const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
+  const recordedChunksRef = useRef<Blob[]>([]);
+
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -71,17 +72,26 @@ export default function MessageInput({
       const recorder = new MediaRecorder(stream);
 
       recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) setRecordedChunks(prev => [...prev, e.data]);
+        if (e.data.size > 0) {
+          recordedChunksRef.current.push(e.data);
+        }
       };
 
-      recorder.onstop = () => {
-        const audioBlob = new Blob(recordedChunks, { type: 'audio/webm' }); // OGG not widely supported for recording
-        const audioFile = new File([audioBlob], `grabacion-${Date.now()}.webm`, {
+    recorder.onstop = () => {
+      // Combine all recorded chunks directly at stop time
+      const blob = new Blob(recordedChunksRef.current, { type: 'audio/webm' });
+
+      if (blob.size > 0) {
+        const file = new File([blob], `grabacion-${Date.now()}.webm`, {
           type: 'audio/webm',
         });
-        setSelectedFile(audioFile);
-        setRecordedChunks([]);
-      };
+        setSelectedFile(file);
+      } else {
+        alert("La grabación falló o está vacía.");
+      }
+
+      recordedChunksRef.current = [];
+    };
 
       recorder.start();
       setMediaRecorder(recorder);
