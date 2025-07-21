@@ -62,11 +62,11 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
     if (msg.file) {
       const fileType = msg.file.split(".").pop()?.toLowerCase()
 
-      const isImage = /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(msg.file)
+      const isImage = /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(msg.file);
 
-      const isVideo =/\.(mp4|webm|ogg|mov|avi|mkv)$/i.test(msg.file)
+      const isAudio = /\.(mp3|wav|m4a|aac|ogg)$/i.test(msg.file);
 
-      const isAudio = /\.(mp3|wav|ogg|m4a|aac)$/i.test(msg.file);
+      const isVideo = !isAudio && /\.(mp4|webm|mov|avi|mkv)$/i.test(msg.file);
 
       const isTemporaryRemote = msg.file.includes("/temp/");
 
@@ -110,25 +110,23 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
     }
 
       // 3. Audio player
-    else if (isAudio) {
-      const audioUrl = msg.file;
+      else if (isAudio) {
+        const audioUrl = msg.file;
 
-      fileElement = (
-        <div className="rounded overflow-hidden bg-gray-200 p-3 max-w-xs flex items-center gap-3">
-          <audio controls className="w-full">
-            <source src={audioUrl} />
-            Tu navegador no soporta audio HTML5.
-          </audio>
-          <a
-            href={audioUrl}
-            download={displayFileName}
-            className="text-blue-600 underline text-sm"
-          >
-            Descargar
-          </a>
-        </div>
-      );
-    }
+        fileElement = (
+          <div className="audiobubble rounded bg-gray-100 px-3 py-2 max-w-xs flex flex-col gap-2 items-start shadow-sm">
+            <audio
+              controls
+              className="w-full h-8"
+              style={{ minHeight: '32px', maxHeight: '32px' }}
+            >
+              <source src={audioUrl} />
+              Tu navegador no soporta audio HTML5.
+            </audio>
+          </div>
+        );
+      }
+
 
 
       // 3. Generic file
@@ -210,7 +208,7 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
           >
             {/* LEFT: Emoji Reactions */}
             {msg.reactions && msg.reactions.length > 0 ? (
-              <div className="flex gap-1 px-2 py-1 rounded-full bg-gray-100 w-fit text-sm translate-y-[2em]">
+              <div className="flex gap-1 px-2 py-1 rounded-full bg-gray-100 w-fit text-sm translate-y-[1em]">
                 {Object.entries(
                   msg.reactions.reduce((acc, r) => {
                     acc[r.emoji] = (acc[r.emoji] || 0) + 1;
@@ -260,7 +258,7 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
 
             <div ref={reactionRef}>
               {showReactions && (
-                <div className="absolute bottom-full mb-1 left-0 bg-white border shadow-lg rounded-xl p-1 flex gap-1 z-20">
+                <div className="absolute right-0 mt-2 w-fit bg-white border rounded shadow-md z-50">
                   {reactions.map((emoji) => (
                     <button
                       key={emoji}
