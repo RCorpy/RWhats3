@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import ChatListPage from './pages/ChatListPage';
@@ -7,8 +8,25 @@ import { useUserStore } from './stores/userStore';
 
 export default function AppRouter() {
   const { user } = useUserStore();
-
   const isLoggedIn = user?.isLoggedIn;
+
+  useEffect(() => {
+    const eventSource = new EventSource("https://bricopoxi.com/sse");
+
+    eventSource.onmessage = (event) => {
+      console.log("📨 New WhatsApp message:", event.data);
+      // You can dispatch this to Zustand store or other handlers
+    };
+
+    eventSource.onerror = (err) => {
+      console.error("❌ SSE Error:", err);
+      eventSource.close();
+    };
+
+    return () => {
+      eventSource.close(); // Cleanup when component unmounts
+    };
+  }, []);
 
   return (
     <BrowserRouter>
