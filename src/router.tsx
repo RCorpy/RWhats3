@@ -12,6 +12,10 @@ export default function AppRouter() {
 
   useEffect(() => {
     const eventSource = new EventSource("https://bricopoxi.com/sse");
+    //console.log("useEffect called")
+    eventSource.onopen = () => {
+      console.log("✅ SSE connection opened");
+    };
 
     eventSource.onmessage = (event) => {
       console.log("📨 New WhatsApp message:", event.data);
